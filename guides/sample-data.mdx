@@ -1,0 +1,475 @@
+---
+title: "Sample Data for Testing"
+description: "Complete end-to-end testing data and scripts aligned with current data models"
+---
+
+## Overview
+
+This guide provides comprehensive sample data for testing Risk Legion end-to-end. All data structures align with the current implementation and can be used for API testing, demonstrations, and development.
+
+<Note>
+For a complete demo scenario using Brazilian banking context, see the [DEMO_DATA_INPUT_GUIDE.md](https://github.com/risklegion/risk-legion/blob/main/DEMO_DATA_INPUT_GUIDE.md) in the repository.
+</Note>
+
+## Quick Start
+
+### 1. Create Test Users
+
+Use the provided script to create test users with different roles:
+
+```bash
+cd backend
+
+# Create a Super Admin
+python scripts/create_test_user.py \
+  --email superadmin@test.com \
+  --password SuperAdmin123! \
+  --role super_admin
+
+# Create a Client Admin
+python scripts/create_test_user.py \
+  --email admin@acme.com \
+  --password Admin123! \
+  --role admin \
+  --enterprise "ACME Corporation"
+
+# Create an Assessor
+python scripts/create_test_user.py \
+  --email assessor@acme.com \
+  --password Assessor123! \
+  --role assessor \
+  --enterprise "ACME Corporation"
+
+# Create a Reviewer
+python scripts/create_test_user.py \
+  --email reviewer@acme.com \
+  --password Reviewer123! \
+  --role reviewer \
+  --enterprise "ACME Corporation"
+```
+
+### 2. Get JWT Tokens
+
+Retrieve JWT tokens for API testing:
+
+```bash
+# Get token for admin user
+python scripts/get_token.py \
+  --email admin@acme.com \
+  --password Admin123!
+
+# Copy the token and use in Postman/curl
+```
+
+## Sample Enterprises
+
+```sql
+-- Create test enterprises
+INSERT INTO enterprises (id, name, country, registration_number, status, subscription_tier, mrr_cents, active)
+VALUES
+  ('550e8400-e29b-41d4-a716-446655440001', 'ACME Corporation', 'US', 'REG-001', 'active', 'enterprise', 199900, true),
+  ('550e8400-e29b-41d4-a716-446655440002', 'Global Tech Inc', 'UK', 'REG-002', 'active', 'professional', 99900, true),
+  ('550e8400-e29b-41d4-a716-446655440003', 'Startup Labs', 'CA', 'REG-003', 'active', 'starter', 49900, true)
+RETURNING id, name, status;
+```
+
+## Sample Organization Structure
+
+### Legal Entities
+
+```sql
+-- Create legal entities with hierarchy
+INSERT INTO legal_entities (id, enterprise_id, name, legal_name, entity_type, registration_number, country_of_incorporation, parent_id, archived)
+VALUES
+  -- Parent entity
+  ('le-001', '550e8400-e29b-41d4-a716-446655440001', 'ACME Bank Brasil S.A.', 'ACME Bank Brasil S.A.', 'Bank', '33.234.567/0001-89', 'Brazil', NULL, false),
+  -- Child entities
+  ('le-002', '550e8400-e29b-41d4-a716-446655440001', 'ACME Seguros Ltda.', 'ACME Seguros Ltda.', 'Insurance', '44.345.678/0001-90', 'Brazil', 'le-001', false),
+  ('le-003', '550e8400-e29b-41d4-a716-446655440001', 'ACME Investimentos DTVM', 'ACME Investimentos DTVM', 'Investment Firm', '55.456.789/0001-01', 'Brazil', 'le-001', false);
+```
+
+### Business Units
+
+```sql
+-- Create business units
+INSERT INTO business_units (id, enterprise_id, legal_entity_id, name, description, archived)
+VALUES
+  ('bu-001', '550e8400-e29b-41d4-a716-446655440001', 'le-001', 'Retail Banking', 'Consumer banking products and services', false),
+  ('bu-002', '550e8400-e29b-41d4-a716-446655440001', 'le-001', 'Corporate Banking', 'Enterprise lending and treasury services', false),
+  ('bu-003', '550e8400-e29b-41d4-a716-446655440001', 'le-001', 'Digital Channels', 'Mobile and internet banking', false);
+```
+
+### Products
+
+```sql
+-- Create products
+INSERT INTO products (id, enterprise_id, name, description, category, customer_types, geographic_operations, distribution_channels, transaction_types, archived)
+VALUES
+  (
+    'prod-001', 
+    '550e8400-e29b-41d4-a716-446655440001',
+    'Checking Accounts (Conta Corrente)',
+    'Standard checking accounts with debit cards and online banking',
+    'Retail Banking',
+    '["Retail", "SME"]',
+    '["São Paulo", "Rio de Janeiro", "Brasília"]',
+    '["Branch", "Mobile App", "Internet Banking"]',
+    '["Deposits", "Withdrawals", "Transfers"]',
+    false
+  ),
+  (
+    'prod-002',
+    '550e8400-e29b-41d4-a716-446655440001', 
+    'Personal Loans (Crédito Pessoal)',
+    'Unsecured consumer loans with fixed interest rates',
+    'Retail Banking',
+    '["Retail"]',
+    '["São Paulo", "Rio de Janeiro", "Minas Gerais"]',
+    '["Branch", "Mobile App", "Call Center"]',
+    '["Loan Origination", "Payments"]',
+    false
+  );
+```
+
+## Sample Risk Library
+
+### Risk Scenarios
+
+```sql
+-- Create risk scenarios
+INSERT INTO risk_scenarios (id, enterprise_id, name, description, category, risk_group, archived)
+VALUES
+  ('rs-001', '550e8400-e29b-41d4-a716-446655440001', 'Consumer Loan Default Risk', 'Risk of consumer loan defaults due to economic downturn or over-indebtedness', 'Credit Risk', 'Financial', false),
+  ('rs-002', '550e8400-e29b-41d4-a716-446655440001', 'Cyberattack on Digital Banking Platform', 'Risk of data breach or system downtime due to cyber attacks', 'Operational Risk', 'Technology', false),
+  ('rs-003', '550e8400-e29b-41d4-a716-446655440001', 'Anti-Money Laundering (AML) Control Failure', 'Risk of failing to detect suspicious transactions', 'Compliance Risk', 'Regulatory', false);
+```
+
+### Key Controls
+
+```sql
+-- Create key controls
+INSERT INTO key_controls (id, enterprise_id, name, description, archived)
+VALUES
+  ('kc-001', '550e8400-e29b-41d4-a716-446655440001', 'Automated Credit Scoring and Risk Rating', 'Standardized credit scoring model using bureau data and behavioral analytics', false),
+  ('kc-002', '550e8400-e29b-41d4-a716-446655440001', 'Multi-Factor Authentication (MFA)', 'Mandatory MFA for digital banking access', false),
+  ('kc-003', '550e8400-e29b-41d4-a716-446655440001', 'Real-Time AML Transaction Monitoring', 'Automated system monitoring all transactions for suspicious patterns', false);
+```
+
+### Sub-Controls with ToD/ToE
+
+```sql
+-- Create sub-controls with effectiveness ratings
+-- ToD: A (Excellent) to E (Inadequate)
+-- ToE: 1 (Highly Effective) to 5 (Ineffective)
+INSERT INTO sub_controls (id, key_control_id, name, description, tod, toe, total_effectiveness, testing_date, tested_by, archived)
+VALUES
+  ('sc-001', 'kc-001', 'Bureau Data Verification', 'Automated verification of credit bureau data', 'A', '1', 'Highly Effective', '2026-01-10', 'John Smith', false),
+  ('sc-002', 'kc-001', 'Income and Employment Verification', 'Cross-checking of stated income against databases', 'B', '2', 'Effective', '2026-01-10', 'John Smith', false),
+  ('sc-003', 'kc-002', 'Biometric Authentication Enrollment', 'Facial recognition or fingerprint for mobile access', 'A', '2', 'Highly Effective', '2026-01-12', 'Jane Doe', false),
+  ('sc-004', 'kc-002', 'Failed Authentication Lockout', 'Account lockout after 3 failed attempts', 'B', '1', 'Highly Effective', '2026-01-12', 'Jane Doe', false),
+  ('sc-005', 'kc-003', 'High-Value Transaction Alerts', 'Alerts for transactions exceeding R$ 50,000', 'A', '2', 'Highly Effective', '2026-01-15', 'Maria Garcia', false),
+  ('sc-006', 'kc-003', 'PEP Screening', 'Screening against Politically Exposed Person databases', 'B', '2', 'Effective', '2026-01-15', 'Maria Garcia', false);
+```
+
+### Risk Triggers
+
+```sql
+-- Create risk triggers
+INSERT INTO risk_triggers (id, enterprise_id, name, description, archived)
+VALUES
+  ('rt-001', '550e8400-e29b-41d4-a716-446655440001', 'Rising Unemployment Rate', 'Unemployment rate exceeds 12%', false),
+  ('rt-002', '550e8400-e29b-41d4-a716-446655440001', 'Increased Cyber Threat Alerts', 'Critical security alerts targeting financial institutions', false),
+  ('rt-003', '550e8400-e29b-41d4-a716-446655440001', 'Regulatory Inspection Notice', 'Formal inspection notice from regulator', false);
+```
+
+## Sample Business Risk Assessment
+
+### Create BRA
+
+```sql
+-- Create a BRA (requires legal_entity_id)
+INSERT INTO business_risk_assessments (
+  id, enterprise_id, legal_entity_id, business_unit_id, 
+  name, description, status, period, assessor, start_date
+)
+VALUES (
+  'bra-001',
+  '550e8400-e29b-41d4-a716-446655440001',
+  'le-001',  -- ACME Bank Brasil S.A.
+  'bu-001',  -- Retail Banking
+  'Q1 2026 Retail Banking Assessment',
+  'Comprehensive risk assessment for retail operations',
+  'in_progress',
+  'Q1 2026',
+  'assessor@acme.com',
+  '2026-01-01'
+);
+```
+
+### Add Risk Scenarios to BRA
+
+```sql
+-- Link risk scenarios to BRA
+INSERT INTO bra_risk_scenarios (id, bra_id, risk_scenario_id, name, description, category, included)
+VALUES
+  ('brs-001', 'bra-001', 'rs-001', 'Consumer Loan Default Risk', 'Risk of consumer loan defaults', 'Credit Risk', true),
+  ('brs-002', 'bra-001', 'rs-002', 'Cyberattack on Digital Banking Platform', 'Risk of cyber attacks', 'Operational Risk', true),
+  ('brs-003', 'bra-001', 'rs-003', 'AML Control Failure', 'Risk of failing to detect suspicious transactions', 'Compliance Risk', true);
+```
+
+### Create Risk Ratings
+
+```sql
+-- Create inherent and residual risk ratings
+-- Risk Score = Impact × Likelihood (1-25)
+-- Risk Levels: Low (1-4), Medium (5-9), High (10-15), Very High (16-25)
+
+INSERT INTO bra_risk_ratings (id, bra_id, bra_risk_scenario_id, rating_type, impact_score, likelihood_score, risk_score, risk_level, justification)
+VALUES
+  -- Inherent ratings
+  ('brr-001', 'bra-001', 'brs-001', 'inherent', 4, 4, 16, 'Very High', 'High economic uncertainty and rising consumer debt levels'),
+  ('brr-002', 'bra-001', 'brs-002', 'inherent', 5, 4, 20, 'Very High', 'Sophisticated threat landscape targeting financial institutions'),
+  ('brr-003', 'bra-001', 'brs-003', 'inherent', 5, 3, 15, 'High', 'Complex transaction patterns and evolving regulatory requirements'),
+  
+  -- Residual ratings (after controls)
+  ('brr-004', 'bra-001', 'brs-001', 'residual', 3, 2, 6, 'Medium', 'Credit scoring and collection processes reduce risk'),
+  ('brr-005', 'bra-001', 'brs-002', 'residual', 3, 2, 6, 'Medium', 'MFA and security operations significantly mitigate risk'),
+  ('brr-006', 'bra-001', 'brs-003', 'residual', 3, 2, 6, 'Medium', 'Real-time monitoring and PEP screening reduce risk');
+```
+
+## Sample Risk Appetite
+
+```sql
+-- Configure risk appetite
+-- Enterprise default (no entity specified)
+INSERT INTO risk_appetite (id, enterprise_id, risk_level, threshold_value, description, legal_entity_id)
+VALUES
+  ('ra-001', '550e8400-e29b-41d4-a716-446655440001', 'Medium', 9, 'Enterprise accepts Medium risk (score ≤9) as maximum tolerance', NULL);
+
+-- Entity-specific override
+INSERT INTO risk_appetite (id, enterprise_id, risk_level, threshold_value, description, legal_entity_id)
+VALUES
+  ('ra-002', '550e8400-e29b-41d4-a716-446655440001', 'Low', 4, 'Lower appetite for insurance subsidiary per regulatory requirement', 'le-002');
+```
+
+## Sample Mitigation Actions
+
+```sql
+-- Create mitigation actions (table is 'mitigation_actions', not 'action_plans')
+INSERT INTO mitigation_actions (
+  id, enterprise_id, bra_id, bra_risk_scenario_id,
+  action, owner, status, priority, due_date, action_type, archived
+)
+VALUES
+  (
+    'ma-001',
+    '550e8400-e29b-41d4-a716-446655440001',
+    'bra-001',
+    'brs-002',
+    'Implement additional endpoint detection and response (EDR) solution',
+    'security@acme.com',
+    'in_progress',
+    'high',
+    '2026-03-31',
+    'Technology',
+    false
+  ),
+  (
+    'ma-002',
+    '550e8400-e29b-41d4-a716-446655440001',
+    'bra-001',
+    'brs-001',
+    'Enhance credit scoring model with additional economic indicators',
+    'credit.risk@acme.com',
+    'created',
+    'medium',
+    '2026-06-30',
+    'Process',
+    false
+  ),
+  (
+    'ma-003',
+    '550e8400-e29b-41d4-a716-446655440001',
+    'bra-001',
+    'brs-003',
+    'Conduct AML training for all customer-facing staff',
+    'compliance@acme.com',
+    'created',
+    'high',
+    '2026-04-30',
+    'Training',
+    false
+  );
+```
+
+## API Testing Examples
+
+### Create BRA via API
+
+```bash
+curl -X POST http://localhost:8000/api/v1/bras \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Q1 2026 Corporate Banking Assessment",
+    "description": "Risk assessment for corporate banking operations",
+    "legal_entity_id": "le-001",
+    "business_unit_id": "bu-002",
+    "period": "Q1 2026",
+    "assessor": "assessor@acme.com"
+  }'
+```
+
+### Add Risk Scenario via API
+
+```bash
+curl -X POST http://localhost:8000/api/v1/bras/$BRA_ID/scenarios \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "risk_scenario_id": "rs-001",
+    "included": true
+  }'
+```
+
+### Create Risk Rating via API
+
+```bash
+curl -X POST http://localhost:8000/api/v1/bras/$BRA_ID/ratings \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bra_risk_scenario_id": "brs-001",
+    "rating_type": "inherent",
+    "impact_score": 4,
+    "likelihood_score": 3,
+    "justification": "Based on current economic conditions and portfolio analysis"
+  }'
+```
+
+### Update Control Effectiveness via API
+
+```bash
+curl -X PATCH http://localhost:8000/api/v1/controls/sub-controls/sc-001 \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tod": "A",
+    "toe": "2",
+    "testing_date": "2026-01-15",
+    "tested_by": "John Smith",
+    "tod_justification": "Control design is comprehensive with documented procedures",
+    "toe_justification": "Sample testing showed 95% effectiveness rate"
+  }'
+```
+
+### Approve BRA via API
+
+```bash
+curl -X POST http://localhost:8000/api/v1/bras/$BRA_ID/approve \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "final_comment": "Assessment reviewed and approved. All risks adequately assessed with appropriate controls."
+  }'
+```
+
+## Verification Queries
+
+### Check Data Counts
+
+```sql
+SELECT 
+  (SELECT COUNT(*) FROM enterprises) as enterprises,
+  (SELECT COUNT(*) FROM legal_entities WHERE archived = false) as legal_entities,
+  (SELECT COUNT(*) FROM business_units WHERE archived = false) as business_units,
+  (SELECT COUNT(*) FROM products WHERE archived = false) as products,
+  (SELECT COUNT(*) FROM risk_scenarios WHERE archived = false) as risk_scenarios,
+  (SELECT COUNT(*) FROM key_controls WHERE archived = false) as key_controls,
+  (SELECT COUNT(*) FROM sub_controls WHERE archived = false) as sub_controls,
+  (SELECT COUNT(*) FROM business_risk_assessments) as bras,
+  (SELECT COUNT(*) FROM mitigation_actions WHERE archived = false) as actions;
+```
+
+### Check BRA Status
+
+```sql
+SELECT 
+  bra.name,
+  bra.status,
+  le.name as legal_entity,
+  bu.name as business_unit,
+  COUNT(brs.id) as scenario_count
+FROM business_risk_assessments bra
+JOIN legal_entities le ON le.id = bra.legal_entity_id
+LEFT JOIN business_units bu ON bu.id = bra.business_unit_id
+LEFT JOIN bra_risk_scenarios brs ON brs.bra_id = bra.id
+GROUP BY bra.id, bra.name, bra.status, le.name, bu.name;
+```
+
+### Check Control Effectiveness
+
+```sql
+SELECT 
+  kc.name as key_control,
+  sc.name as sub_control,
+  sc.tod,
+  sc.toe,
+  sc.total_effectiveness,
+  sc.testing_date
+FROM sub_controls sc
+JOIN key_controls kc ON kc.id = sc.key_control_id
+WHERE sc.archived = false
+ORDER BY kc.name, sc.name;
+```
+
+## Data Model Reference
+
+### ToD Rating Scale
+
+| Grade | Meaning |
+|-------|---------|
+| A | Excellent - Comprehensive design |
+| B | Good - Well-structured with minor gaps |
+| C | Adequate - Meets minimum requirements |
+| D | Weak - Significant gaps |
+| E | Inadequate - Fundamentally flawed |
+
+### ToE Rating Scale
+
+| Grade | Meaning |
+|-------|---------|
+| 1 | Highly Effective (95%+) |
+| 2 | Effective (85-95%) |
+| 3 | Moderately Effective (70-85%) |
+| 4 | Less Effective (50-70%) |
+| 5 | Ineffective (&lt;50%) |
+
+### Risk Levels
+
+| Score Range | Level |
+|-------------|-------|
+| 1-4 | Low |
+| 5-9 | Medium |
+| 10-15 | High |
+| 16-25 | Very High |
+
+## Next Steps
+
+<Steps>
+  <Step title="Create Test Users">
+    Use scripts to create users with all roles
+  </Step>
+  <Step title="Seed Enterprise Data">
+    Run SQL scripts to populate organization structure
+  </Step>
+  <Step title="Create Risk Library">
+    Add scenarios, controls, and triggers
+  </Step>
+  <Step title="Create and Complete BRA">
+    Walk through full BRA workflow
+  </Step>
+  <Step title="Test API Endpoints">
+    Verify all endpoints work correctly
+  </Step>
+</Steps>

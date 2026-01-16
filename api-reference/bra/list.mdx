@@ -1,0 +1,79 @@
+---
+title: 'List BRAs'
+description: 'Retrieve all Business Risk Assessments'
+---
+
+## Endpoint
+
+```
+GET /api/v1/bras
+```
+
+## Description
+
+Retrieves a paginated list of Business Risk Assessments. Results are filtered based on user role and entity assignments.
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `status` | string | No | Filter by status: `draft`, `in_progress`, `under_review`, `approved`, `cancelled` |
+| `legal_entity_id` | UUID | No | Filter by Legal Entity |
+| `business_unit_id` | UUID | No | Filter by Business Unit |
+| `page` | integer | No | Page number (default: 1) |
+| `page_size` | integer | No | Items per page (default: 25, max: 100) |
+
+## Response
+
+```json
+{
+  "data": [
+    {
+      "id": "bra-uuid-001",
+      "name": "Q1 2026 Retail Banking Assessment",
+      "description": "Comprehensive risk assessment for retail operations",
+      "legal_entity_id": "le-uuid-001",
+      "business_unit_id": "bu-uuid-001",
+      "status": "in_progress",
+      "period": "Q1 2026",
+      "assessor": "John Smith",
+      "start_date": "2026-01-01",
+      "completion_date": null,
+      "created_at": "2026-01-15T10:30:00Z",
+      "updated_at": "2026-01-15T14:45:00Z",
+      "legal_entity": {
+        "id": "le-uuid-001",
+        "name": "ACME Bank Brasil S.A."
+      },
+      "business_unit": {
+        "id": "bu-uuid-001",
+        "name": "Retail Banking"
+      }
+    }
+  ],
+  "message": "BRAs retrieved successfully",
+  "pagination": {
+    "page": 1,
+    "page_size": 25,
+    "total": 15,
+    "total_pages": 1,
+    "has_next": false,
+    "has_prev": false
+  }
+}
+```
+
+## Example Request
+
+```bash
+curl -X GET "https://api.risklegion.com/api/v1/bras?status=in_progress&page=1&page_size=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## Role-Based Filtering
+
+| Role | Data Returned |
+|------|---------------|
+| Client Admin | All BRAs in enterprise |
+| Assessor | BRAs for assigned entities |
+| Reviewer | BRAs for assigned entities |

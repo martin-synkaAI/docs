@@ -1,0 +1,130 @@
+---
+title: 'System Alerts'
+description: 'View and manage platform alerts'
+---
+
+## List Alerts
+
+### Endpoint
+
+```
+GET /api/v1/admin/alerts
+```
+
+### Required Role
+
+- Super Admin
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter: `open`, `acknowledged`, `resolved` |
+| `severity` | string | Filter: `info`, `warning`, `error`, `critical` |
+| `page` | integer | Page number |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "alert-uuid-001",
+      "type": "enterprise_health",
+      "severity": "warning",
+      "title": "Enterprise ACME: Low Activity",
+      "message": "No logins detected in the last 72 hours",
+      "enterprise_id": "ent-uuid-001",
+      "status": "open",
+      "created_at": "2026-01-15T08:00:00Z",
+      "acknowledged_at": null,
+      "resolved_at": null
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+---
+
+## Acknowledge Alert
+
+### Endpoint
+
+```
+PATCH /api/v1/admin/alerts/{alert_id}
+```
+
+### Required Role
+
+- Super Admin
+
+### Request Body
+
+```json
+{
+  "status": "acknowledged",
+  "notes": "Investigating - enterprise is on holiday"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "alert-uuid-001",
+    "status": "acknowledged",
+    "acknowledged_at": "2026-01-16T10:00:00Z",
+    "acknowledged_by": "admin-user-uuid",
+    "notes": "Investigating - enterprise is on holiday"
+  },
+  "message": "Alert acknowledged"
+}
+```
+
+---
+
+## Resolve Alert
+
+### Endpoint
+
+```
+PATCH /api/v1/admin/alerts/{alert_id}
+```
+
+### Request Body
+
+```json
+{
+  "status": "resolved",
+  "resolution": "Enterprise confirmed - no action needed"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "alert-uuid-001",
+    "status": "resolved",
+    "resolved_at": "2026-01-16T11:00:00Z",
+    "resolved_by": "admin-user-uuid",
+    "resolution": "Enterprise confirmed - no action needed"
+  },
+  "message": "Alert resolved"
+}
+```
+
+---
+
+## Alert Types
+
+| Type | Description | Severity |
+|------|-------------|----------|
+| `enterprise_health` | Enterprise activity issues | warning |
+| `authentication` | Login failures, suspicious activity | warning/error |
+| `performance` | Slow responses, timeouts | warning |
+| `database` | Connection or query issues | error/critical |
+| `system` | Infrastructure problems | critical |

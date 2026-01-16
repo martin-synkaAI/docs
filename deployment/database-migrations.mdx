@@ -1,0 +1,243 @@
+---
+title: 'Database Migrations'
+description: 'Managing database schema changes'
+---
+
+## Overview
+
+Risk Legion uses Supabase PostgreSQL for data storage. Schema changes are managed through Supabase Dashboard and SQL migration files.
+
+## Migration Approach
+
+<Note>
+Risk Legion currently uses a manual migration approach via Supabase SQL Editor. Automated migration tools can be added as the project scales.
+</Note>
+
+## Applying Migrations
+
+### Via Supabase Dashboard
+
+1. Go to Supabase Dashboard → SQL Editor
+2. Open the migration file
+3. Review the SQL
+4. Execute
+
+### Via Supabase CLI
+
+```bash
+# Install Supabase CLI
+npm install -g supabase
+
+# Link to project
+supabase link --project-ref your-project-ref
+
+# Push migrations
+supabase db push
+```
+
+## Index Migrations
+
+Performance indexes have been applied to the database:
+
+```sql
+-- Core indexes for enterprise isolation
+CREATE INDEX IF NOT EXISTS idx_bras_enterprise 
+ON business_risk_assessments(enterprise_id);
+
+CREATE INDEX IF NOT EXISTS idx_legal_entities_enterprise 
+ON legal_entities(enterprise_id);
+
+-- BRA query optimization
+CREATE INDEX IF NOT EXISTS idx_bra_risk_scenarios_bra 
+ON bra_risk_scenarios(bra_id);
+
+CREATE INDEX IF NOT EXISTS idx_bra_risk_ratings_bra 
+ON bra_risk_ratings(bra_id);
+
+CREATE INDEX IF NOT EXISTS idx_bra_risk_ratings_scenario 
+ON bra_risk_ratings(bra_risk_scenario_id);
+
+-- Control query optimization
+CREATE INDEX IF NOT EXISTS idx_sub_controls_key_control 
+ON sub_controls(key_control_id);
+
+-- Action query optimization
+CREATE INDEX IF NOT EXISTS idx_mitigation_actions_status 
+ON mitigation_actions(status);
+
+CREATE INDEX IF NOT EXISTS idx_mitigation_actions_due_date 
+ON mitigation_actions(due_date);
+
+-- Audit log optimization
+CREATE INDEX IF NOT EXISTS idx_audit_log_enterprise 
+ON audit_log(enterprise_id);
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_created 
+ON audit_log(created_at);
+```
+
+## RLS Policy Setup
+
+Enable Row Level Security on all tables:
+
+```sql
+-- Enable RLS
+ALTER TABLE enterprises ENABLE ROW LEVEL SECURITY;
+ALTER TABLE enterprise_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE business_risk_assessments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bra_risk_scenarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bra_risk_ratings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mitigation_actions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE legal_entities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE business_units ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE risk_scenarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE key_controls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sub_controls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
+
+-- Example policy: Users can only access their enterprise data
+CREATE POLICY "enterprise_isolation" ON business_risk_assessments
+FOR ALL
+USING (
+    enterprise_id IN (
+        SELECT enterprise_id 
+        FROM enterprise_users 
+        WHERE user_id = auth.uid()
+    )
+);
+```
+
+## Trigger Setup
+
+```sql
+-- Automatic timestamp updates
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply to tables
+CREATE TRIGGER update_bras_updated_at
+BEFORE UPDATE ON business_risk_assessments
+FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER update_legal_entities_updated_at
+BEFORE UPDATE ON legal_entities
+FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- Add triggers to all tables with updated_at column
+```
+
+## Risk Score Calculation
+
+```sql
+-- Automatic risk score calculation
+CREATE OR REPLACE FUNCTION calculate_risk_score()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.risk_score = NEW.impact_score * NEW.likelihood_score;
+    NEW.risk_level = CASE
+        WHEN NEW.risk_score <= 4 THEN 'Low'
+        WHEN NEW.risk_score <= 9 THEN 'Medium'
+        WHEN NEW.risk_score <= 15 THEN 'High'
+        ELSE 'Very High'
+    END;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER calculate_rating_score
+BEFORE INSERT OR UPDATE ON bra_risk_ratings
+FOR EACH ROW EXECUTE FUNCTION calculate_risk_score();
+```
+
+## Verifying Migrations
+
+### Check Indexes
+
+```sql
+SELECT 
+    schemaname,
+    tablename,
+    indexname,
+    indexdef
+FROM pg_indexes
+WHERE schemaname = 'public'
+ORDER BY tablename, indexname;
+```
+
+### Check RLS Status
+
+```sql
+SELECT 
+    tablename,
+    rowsecurity
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY tablename;
+```
+
+### Check Triggers
+
+```sql
+SELECT 
+    trigger_name,
+    event_manipulation,
+    event_object_table,
+    action_statement
+FROM information_schema.triggers
+WHERE trigger_schema = 'public';
+```
+
+## Rollback Procedures
+
+### Before Applying
+
+1. Take a database backup
+2. Test migration in staging first
+3. Document rollback SQL
+
+### Rollback Example
+
+```sql
+-- Rollback: Remove index
+DROP INDEX IF EXISTS idx_bras_enterprise;
+
+-- Rollback: Remove trigger
+DROP TRIGGER IF EXISTS update_bras_updated_at ON business_risk_assessments;
+
+-- Rollback: Disable RLS (caution!)
+ALTER TABLE business_risk_assessments DISABLE ROW LEVEL SECURITY;
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Always Test First">
+    - Apply migrations to staging before production
+    - Verify application works correctly
+    - Check query performance
+  </Accordion>
+  
+  <Accordion title="Document Changes">
+    - Keep migration files in version control
+    - Include rollback procedures
+    - Document purpose of each change
+  </Accordion>
+  
+  <Accordion title="Backup Before Changes">
+    - Create point-in-time backup
+    - Verify backup is restorable
+    - Keep backup until change is verified
+  </Accordion>
+  
+  <Accordion title="Monitor After Deploy">
+    - Watch for query performance issues
+    - Monitor error rates
+    - Check audit logs for issues
+  </Accordion>
+</AccordionGroup>

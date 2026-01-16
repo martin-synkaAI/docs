@@ -1,0 +1,266 @@
+---
+title: 'Supabase Setup'
+description: 'Configure Supabase for Risk Legion'
+---
+
+## Overview
+
+Risk Legion uses Supabase for:
+- **PostgreSQL Database** - Primary data storage
+- **Authentication** - User management and JWT tokens
+- **Row Level Security** - Multi-tenant data isolation
+
+## Creating a Project
+
+### 1. Create New Project
+
+1. Go to [supabase.com](https://supabase.com)
+2. Sign in and click "New Project"
+3. Choose organization
+4. Enter project details:
+   - **Name:** risk-legion-production
+   - **Database Password:** (save securely)
+   - **Region:** Choose closest to your users
+5. Click "Create new project"
+
+### 2. Note Credentials
+
+From Project Settings → API:
+
+| Credential | Use |
+|------------|-----|
+| **Project URL** | `SUPABASE_URL` |
+| **anon/public key** | `SUPABASE_ANON_KEY` (frontend) |
+| **service_role key** | `SUPABASE_SERVICE_ROLE_KEY` (backend) |
+
+From Project Settings → Database:
+
+| Credential | Use |
+|------------|-----|
+| **Connection string** | `DATABASE_URL` |
+
+## Database Setup
+
+### 1. Create Tables
+
+Run schema SQL in SQL Editor:
+
+```sql
+-- Core tables (see /docs/database-schema for full SQL)
+
+-- Enterprises
+CREATE TABLE enterprises (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    country VARCHAR(100),
+    registration_number VARCHAR(100),
+    status VARCHAR(50) DEFAULT 'active',
+    subscription_tier VARCHAR(50) DEFAULT 'starter',
+    mrr_cents INTEGER DEFAULT 0,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Continue with all tables...
+```
+
+### 2. Enable RLS
+
+```sql
+-- Enable on all tables
+ALTER TABLE enterprises ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE enterprise_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE business_risk_assessments ENABLE ROW LEVEL SECURITY;
+-- ... all tables
+```
+
+### 3. Create RLS Policies
+
+```sql
+-- Enterprise isolation
+CREATE POLICY "Users can access their enterprise data"
+ON enterprises FOR ALL
+USING (
+    id IN (
+        SELECT enterprise_id FROM enterprise_users
+        WHERE user_id = auth.uid()
+    )
+);
+
+-- BRA access
+CREATE POLICY "Users can access their enterprise BRAs"
+ON business_risk_assessments FOR ALL
+USING (
+    enterprise_id IN (
+        SELECT enterprise_id FROM enterprise_users
+        WHERE user_id = auth.uid()
+    )
+);
+```
+
+### 4. Create Indexes
+
+```sql
+-- Performance indexes
+CREATE INDEX idx_bras_enterprise ON business_risk_assessments(enterprise_id);
+CREATE INDEX idx_bra_scenarios_bra ON bra_risk_scenarios(bra_id);
+CREATE INDEX idx_audit_log_enterprise ON audit_log(enterprise_id);
+-- See database-migrations for full list
+```
+
+## Authentication Setup
+
+### 1. Configure Providers
+
+In Authentication → Providers:
+
+- **Email:** Enable
+- **Password requirements:** Set minimum 8 characters
+
+### 2. Configure URLs
+
+In Authentication → URL Configuration:
+
+| Setting | Development | Production |
+|---------|-------------|------------|
+| Site URL | `http://localhost:5173` | `https://app.risklegion.com` |
+| Redirect URLs | `http://localhost:5173/*` | `https://app.risklegion.com/*` |
+
+### 3. Email Templates (Optional)
+
+In Authentication → Email Templates:
+
+Customize:
+- Confirm signup
+- Reset password
+- Magic link
+
+## Profile Trigger
+
+Create a trigger to automatically create profiles:
+
+```sql
+-- Create profile on signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.profiles (id, email, full_name)
+    VALUES (
+        NEW.id,
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data->>'full_name', '')
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+```
+
+## Storage Setup (Optional)
+
+If you need file storage:
+
+1. Go to Storage → Create bucket
+2. Name: `documents`
+3. Configure RLS policies for bucket access
+
+## Backup Configuration
+
+### Automatic Backups
+
+Supabase Pro plans include:
+- Daily automated backups
+- Point-in-time recovery
+- 7-day retention
+
+### Manual Backup
+
+```bash
+# Via pg_dump
+pg_dump -h db.your-project.supabase.co \
+  -U postgres \
+  -d postgres \
+  > backup.sql
+```
+
+## Monitoring
+
+### Dashboard Metrics
+
+In Project Dashboard:
+- Database size
+- API requests
+- Auth users
+- Realtime connections
+
+### Logs
+
+In Logs:
+- API logs
+- Auth logs
+- Database logs
+
+## Environment-Specific Projects
+
+Consider separate projects for:
+
+| Environment | Project Name |
+|-------------|--------------|
+| Development | risk-legion-dev |
+| Staging | risk-legion-staging |
+| Production | risk-legion-production |
+
+## Security Checklist
+
+<AccordionGroup>
+  <Accordion title="RLS Enabled">
+    - All tables have RLS enabled
+    - Policies cover all operations (SELECT, INSERT, UPDATE, DELETE)
+    - Test with different user roles
+  </Accordion>
+  
+  <Accordion title="Keys Protected">
+    - Never expose service_role key to frontend
+    - anon key is safe for frontend
+    - Rotate keys if compromised
+  </Accordion>
+  
+  <Accordion title="Network Security">
+    - Enable SSL enforcement
+    - Restrict database connections (optional)
+    - Use VPN for direct database access
+  </Accordion>
+  
+  <Accordion title="Auth Security">
+    - Strong password requirements
+    - Consider MFA for admin users
+    - Monitor for suspicious activity
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="RLS blocking queries">
+    - Check if user has correct enterprise_id
+    - Verify auth.uid() returns expected value
+    - Test policy with direct SQL
+  </Accordion>
+  
+  <Accordion title="Connection refused">
+    - Check project is active (not paused)
+    - Verify connection string is correct
+    - Check IP whitelist settings
+  </Accordion>
+  
+  <Accordion title="Auth not working">
+    - Verify API keys are correct
+    - Check redirect URLs are configured
+    - Review auth logs for errors
+  </Accordion>
+</AccordionGroup>

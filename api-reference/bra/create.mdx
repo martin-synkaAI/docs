@@ -1,0 +1,85 @@
+---
+title: 'Create BRA'
+description: 'Create a new Business Risk Assessment'
+---
+
+## Endpoint
+
+```
+POST /api/v1/bras
+```
+
+## Description
+
+Creates a new Business Risk Assessment. An initial snapshot is automatically created upon BRA creation.
+
+## Required Role
+
+- Client Admin
+- Assessor
+
+## Request Body
+
+```json
+{
+  "name": "Q1 2026 Retail Banking Assessment",
+  "description": "Comprehensive risk assessment for retail operations",
+  "legal_entity_id": "le-uuid-001",
+  "business_unit_id": "bu-uuid-001",
+  "period": "Q1 2026",
+  "assessor": "John Smith",
+  "start_date": "2026-01-01"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | BRA name |
+| `description` | string | No | Description of the assessment |
+| `legal_entity_id` | UUID | Yes | Legal Entity being assessed |
+| `business_unit_id` | UUID | No | Business Unit (optional) |
+| `period` | string | Yes | Assessment period (e.g., "Q1 2026") |
+| `assessor` | string | Yes | Name of assessor |
+| `start_date` | date | No | Assessment start date |
+
+## Response
+
+```json
+{
+  "data": {
+    "id": "bra-uuid-001",
+    "name": "Q1 2026 Retail Banking Assessment",
+    "description": "Comprehensive risk assessment for retail operations",
+    "legal_entity_id": "le-uuid-001",
+    "business_unit_id": "bu-uuid-001",
+    "status": "draft",
+    "period": "Q1 2026",
+    "assessor": "John Smith",
+    "start_date": "2026-01-01",
+    "created_at": "2026-01-15T10:30:00Z",
+    "updated_at": "2026-01-15T10:30:00Z"
+  },
+  "message": "BRA created successfully"
+}
+```
+
+## Example Request
+
+```bash
+curl -X POST "https://api.risklegion.com/api/v1/bras" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Q1 2026 Retail Banking Assessment",
+    "legal_entity_id": "le-uuid-001",
+    "period": "Q1 2026",
+    "assessor": "John Smith"
+  }'
+```
+
+## Validation Rules
+
+- `name` must be unique within the enterprise
+- `legal_entity_id` must exist and be accessible to the user
+- `business_unit_id` must belong to the specified legal entity
+- Assessors can only create BRAs for their assigned entities

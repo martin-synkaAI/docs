@@ -1,0 +1,91 @@
+---
+title: 'List Controls'
+description: 'Retrieve key controls and sub-controls'
+---
+
+## List Key Controls
+
+### Endpoint
+
+```
+GET /api/v1/controls/key-controls
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `archived` | boolean | Include archived controls (default: false) |
+| `page` | integer | Page number |
+| `page_size` | integer | Items per page |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "kc-uuid-001",
+      "name": "Automated Credit Scoring and Risk Rating",
+      "description": "Standardized credit scoring using bureau data",
+      "archived": false,
+      "created_at": "2026-01-01T00:00:00Z",
+      "sub_controls": [
+        {
+          "id": "sc-uuid-001",
+          "name": "Bureau Data Verification",
+          "tod": "B",
+          "toe": "2",
+          "total_effectiveness": "Effective"
+        },
+        {
+          "id": "sc-uuid-002",
+          "name": "Income Verification",
+          "tod": "A",
+          "toe": "1",
+          "total_effectiveness": "Highly Effective"
+        }
+      ]
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+---
+
+## List Sub-Controls
+
+### Endpoint
+
+```
+GET /api/v1/controls/sub-controls
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `key_control_id` | UUID | Filter by parent key control |
+| `archived` | boolean | Include archived (default: false) |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "sc-uuid-001",
+      "key_control_id": "kc-uuid-001",
+      "name": "Bureau Data Verification",
+      "description": "Verification of credit bureau data",
+      "tod": "B",
+      "toe": "2",
+      "total_effectiveness": "Effective",
+      "testing_date": "2026-01-10",
+      "tested_by": "John Smith",
+      "archived": false
+    }
+  ]
+}
+```

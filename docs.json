@@ -1,68 +1,134 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Risk Legion",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#0856f8",
+    "light": "#3B82F6",
+    "dark": "#042b7c"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
               "index",
               "quickstart",
-              "development"
+              "architecture/overview"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "guides/bra-assessment",
+              "guides/control-assurance",
+              "guides/risk-appetite",
+              "guides/action-plans"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Testing",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "guides/sample-data"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "User Roles",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "guides/roles/super-admin",
+              "guides/roles/client-admin",
+              "guides/roles/assessor",
+              "guides/roles/reviewer"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "architecture/database-schema",
+              "architecture/authentication",
+              "architecture/rbac",
+              "architecture/health-monitoring"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Introduction",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/introduction",
+              "api-reference/authentication"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "BRA Management",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/bra/list",
+              "api-reference/bra/create",
+              "api-reference/bra/get",
+              "api-reference/bra/update",
+              "api-reference/bra/delete"
+            ]
+          },
+          {
+            "group": "Control Assurance",
+            "pages": [
+              "api-reference/controls/list",
+              "api-reference/controls/create",
+              "api-reference/controls/assess",
+              "api-reference/controls/effectiveness"
+            ]
+          },
+          {
+            "group": "Admin Operations",
+            "pages": [
+              "api-reference/admin/enterprises",
+              "api-reference/admin/users",
+              "api-reference/admin/health",
+              "api-reference/admin/alerts"
+            ]
+          },
+          {
+            "group": "Governance",
+            "pages": [
+              "api-reference/governance/risk-appetite",
+              "api-reference/governance/action-plans",
+              "api-reference/governance/audit-trail"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Deployment",
+        "groups": [
+          {
+            "group": "Setup",
+            "pages": [
+              "deployment/local-development",
+              "deployment/environment-setup",
+              "deployment/database-migrations"
+            ]
+          },
+          {
+            "group": "Production",
+            "pages": [
+              "deployment/frontend-deployment",
+              "deployment/backend-deployment",
+              "deployment/supabase-setup"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "deployment/environment-variables",
+              "deployment/health-monitoring-setup",
+              "deployment/cron-jobs"
             ]
           }
         ]
@@ -71,14 +137,14 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "GitHub",
+          "href": "https://github.com/risklegion",
+          "icon": "github"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Support",
+          "href": "mailto:support@risklegion.com",
+          "icon": "headset"
         }
       ]
     }
@@ -90,33 +156,24 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Dashboard",
+        "href": "https://app.risklegion.com"
       }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
+    ]
   },
   "contextual": {
     "options": [
      "copy",
      "view",
-     "chatgpt",
      "claude",
-     "perplexity",
-     "mcp",
      "cursor",
      "vscode"
    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "linkedin": "https://linkedin.com/company/risklegion",
+      "x": "https://x.com/risklegion"
     }
   }
 }

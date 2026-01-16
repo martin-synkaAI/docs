@@ -1,0 +1,124 @@
+---
+title: 'Enterprise Management'
+description: 'Manage enterprises (Super Admin only)'
+---
+
+## List Enterprises
+
+### Endpoint
+
+```
+GET /api/v1/admin/enterprises
+```
+
+### Required Role
+
+- Super Admin
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter by status: `active`, `inactive` |
+| `page` | integer | Page number |
+| `page_size` | integer | Items per page |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "ent-uuid-001",
+      "name": "ACME Corporation",
+      "country": "US",
+      "registration_number": "REG-12345",
+      "status": "active",
+      "subscription_tier": "enterprise",
+      "mrr_cents": 199900,
+      "created_at": "2025-06-01T00:00:00Z",
+      "user_count": 25,
+      "bra_count": 15
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+---
+
+## Create Enterprise
+
+### Endpoint
+
+```
+POST /api/v1/admin/enterprises
+```
+
+### Required Role
+
+- Super Admin
+
+### Request Body
+
+```json
+{
+  "name": "New Corporation",
+  "country": "BR",
+  "registration_number": "12.345.678/0001-90"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "ent-uuid-new",
+    "name": "New Corporation",
+    "country": "BR",
+    "registration_number": "12.345.678/0001-90",
+    "status": "active",
+    "subscription_tier": "starter",
+    "created_at": "2026-01-16T10:00:00Z"
+  },
+  "message": "Enterprise created successfully"
+}
+```
+
+---
+
+## Update Enterprise
+
+### Endpoint
+
+```
+PATCH /api/v1/admin/enterprises/{enterprise_id}
+```
+
+### Required Role
+
+- Super Admin
+
+### Request Body
+
+```json
+{
+  "status": "inactive",
+  "subscription_tier": "professional"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "ent-uuid-001",
+    "status": "inactive",
+    "subscription_tier": "professional",
+    "updated_at": "2026-01-16T10:00:00Z"
+  },
+  "message": "Enterprise updated successfully"
+}
+```

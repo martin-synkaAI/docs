@@ -1,0 +1,310 @@
+---
+title: 'Backend Deployment'
+description: 'Deploy the Risk Legion API to AWS EC2'
+---
+
+## Overview
+
+The Risk Legion backend is deployed to AWS EC2 using Docker containers, with automated CI/CD via GitHub Actions.
+
+## Architecture
+
+```
+GitHub Repository
+       │
+       ▼
+GitHub Actions CI/CD
+       │
+       ├── Build Docker Image
+       ├── Push to GHCR
+       └── Deploy to EC2
+              │
+              ▼
+     AWS EC2 Instance
+       ├── nginx (reverse proxy)
+       ├── Backend Container (port 8000)
+       └── Redis Container (port 6379)
+```
+
+## CI/CD Pipeline
+
+The pipeline (`.github/workflows/backend-deploy.yml`) runs on pushes to `main` and `staging`:
+
+### Jobs
+
+1. **Setup** - Prepare environment
+2. **Test** - Lint, type-check, run tests
+3. **Build** - Build and push Docker image to GHCR
+4. **Deploy** - SSH to EC2 and deploy container
+
+### Triggers
+
+```yaml
+on:
+  push:
+    branches: [main, staging]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [main]
+```
+
+## Docker Configuration
+
+### Dockerfile
+
+```dockerfile
+# Multi-stage build
+FROM python:3.11-slim as builder
+
+WORKDIR /app
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir uv && \
+    uv pip install --system -r requirements.txt
+
+# Runtime stage
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY . .
+
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+```
+
+### docker-compose.yml
+
+```yaml
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-cli --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+volumes:
+  redis-data:
+```
+
+## Deployment Steps
+
+### 1. EC2 Instance Setup
+
+```bash
+# SSH to instance
+ssh ubuntu@your-ec2-instance
+
+# Install Docker
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker ubuntu
+
+# Install nginx
+sudo apt install nginx -y
+```
+
+### 2. Configure nginx
+
+```nginx
+# /etc/nginx/sites-available/api.risklegion.com
+
+server {
+    listen 80;
+    server_name api.risklegion.com;
+
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+Enable the site:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/api.risklegion.com /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 3. SSL Certificate
+
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d api.risklegion.com
+```
+
+### 4. Deploy Container
+
+```bash
+# Login to GHCR
+echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+
+# Pull latest image
+docker pull ghcr.io/risklegion/risk-legion-api:main
+
+# Run container
+docker run -d \
+  --name risk-legion-api \
+  --restart unless-stopped \
+  -p 8000:8000 \
+  -e SUPABASE_URL=$SUPABASE_URL \
+  -e SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
+  -e SECRET_KEY=$SECRET_KEY \
+  -e REDIS_URL=redis://redis:6379 \
+  ghcr.io/risklegion/risk-legion-api:main
+```
+
+## GitHub Actions Configuration
+
+### Required Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `AWS_ACCESS_KEY_ID` | AWS IAM access key |
+| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret |
+| `EC2_HOST` | EC2 public IP |
+| `EC2_USER` | SSH username (ubuntu) |
+| `EC2_SSH_KEY` | Private SSH key |
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
+| `DATABASE_URL` | Database connection string |
+| `SECRET_KEY` | Application secret key |
+| `GH_PAT` | GitHub PAT for GHCR |
+
+### Environment-Specific Deployment
+
+```yaml
+# Staging (api-test.risklegion.com)
+staging:
+  port: 8001
+  tag: staging
+  domain: api-test.risklegion.com
+
+# Production (api.risklegion.com)  
+production:
+  port: 8000
+  tag: main
+  domain: api.risklegion.com
+```
+
+## Health Verification
+
+After deployment, verify health:
+
+```bash
+# Check container status
+docker ps
+
+# Check health endpoint
+curl https://api.risklegion.com/health
+
+# Check logs
+docker logs risk-legion-api --tail 100
+```
+
+## Rollback Procedure
+
+### Quick Rollback
+
+```bash
+# SSH to EC2
+ssh ubuntu@your-instance
+
+# Pull previous image
+docker pull ghcr.io/risklegion/risk-legion-api:previous-tag
+
+# Stop current container
+docker stop risk-legion-api
+
+# Start previous version
+docker run -d --name risk-legion-api ...
+```
+
+### Via GitHub Actions
+
+Re-run a previous successful deployment:
+1. Go to Actions → workflow runs
+2. Find successful deployment
+3. Click "Re-run all jobs"
+
+## Scaling
+
+### Horizontal Scaling
+
+Add more EC2 instances behind a load balancer:
+
+1. Create Application Load Balancer (ALB)
+2. Create target group
+3. Add EC2 instances to target group
+4. Point domain to ALB
+
+### Vertical Scaling
+
+Upgrade EC2 instance size:
+
+```bash
+# Via AWS CLI
+aws ec2 stop-instances --instance-ids i-xxxxx
+aws ec2 modify-instance-attribute --instance-id i-xxxxx --instance-type t3.medium
+aws ec2 start-instances --instance-ids i-xxxxx
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Container won't start">
+    ```bash
+    # Check logs
+    docker logs risk-legion-api
+    
+    # Check environment variables
+    docker exec risk-legion-api env
+    ```
+  </Accordion>
+  
+  <Accordion title="502 Bad Gateway">
+    - Container might not be running
+    - Check if port 8000 is accessible
+    - Verify nginx configuration
+  </Accordion>
+  
+  <Accordion title="Deployment fails">
+    - Check GitHub Actions logs
+    - Verify EC2 SSH connectivity
+    - Check disk space on EC2
+  </Accordion>
+  
+  <Accordion title="Performance issues">
+    - Check container resource usage: `docker stats`
+    - Review slow queries in logs
+    - Consider scaling up instance
+  </Accordion>
+</AccordionGroup>

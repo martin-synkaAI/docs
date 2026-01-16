@@ -1,0 +1,244 @@
+---
+title: "Super Admin Role"
+description: "Platform-wide management and monitoring capabilities"
+---
+
+## Overview
+
+Super Admins are platform-level administrators who manage the Risk Legion multi-tenant environment. They have visibility across all enterprises for monitoring purposes but do not access client business data.
+
+<Warning>
+Super Admin is a privileged role with platform-wide access. It should only be assigned to WiseScore platform operators, not to client users.
+</Warning>
+
+## Key Responsibilities
+
+| Responsibility | Description |
+|---------------|-------------|
+| Enterprise Management | Create and manage client enterprises |
+| User Management | Create Client Admin users for enterprises |
+| Platform Monitoring | Monitor health and status of all enterprises |
+| System Alerts | Manage and respond to platform-level alerts |
+| Super Admin Management | Add/remove other Super Admins |
+
+## Access Scope
+
+### What Super Admins CAN Access
+
+<CardGroup cols={2}>
+  <Card title="Enterprise List" icon="building">
+    View all enterprises, their status, subscription tier, and high-level health metrics
+  </Card>
+  <Card title="Platform Health" icon="heart-pulse">
+    Monitor system-wide health, performance metrics, and infrastructure status
+  </Card>
+  <Card title="User Management" icon="users-gear">
+    Create Client Admin users and manage Super Admin accounts
+  </Card>
+  <Card title="System Alerts" icon="bell">
+    View and respond to platform-level alerts and notifications
+  </Card>
+</CardGroup>
+
+### What Super Admins CANNOT Access
+
+- **BRA Data** - Cannot view Business Risk Assessments
+- **Risk Scenarios** - Cannot access enterprise risk libraries
+- **Control Assurance** - Cannot view control effectiveness data
+- **Audit Logs** - Cannot access enterprise-level audit trails
+- **Business Data** - No access to any client operational data
+
+<Info>
+This separation ensures client data privacy and prevents platform operators from accessing sensitive business information.
+</Info>
+
+## Super Admin Dashboard
+
+The Super Admin interface (`/admin` route) provides:
+
+### Enterprise Overview
+
+| Metric | Description |
+|--------|-------------|
+| Total Enterprises | Count of all client organizations |
+| Active Enterprises | Organizations with active subscriptions |
+| Enterprise Health | Status indicators per enterprise |
+| Recent Alerts | Platform alerts requiring attention |
+
+### Enterprise Management
+
+**Creating a New Enterprise:**
+
+1. Navigate to **Admin → Enterprises**
+2. Click **Create Enterprise**
+3. Fill in enterprise details:
+   - Enterprise Name
+   - Country
+   - Registration Number
+   - Subscription Tier
+4. Click **Create**
+
+**Managing Existing Enterprises:**
+
+| Action | Description |
+|--------|-------------|
+| View Details | See enterprise metadata and health |
+| Edit | Update enterprise information |
+| Deactivate | Temporarily disable enterprise access |
+| View Users | List users in the enterprise |
+
+### User Management
+
+**Creating a Client Admin:**
+
+1. Navigate to **Admin → Enterprises → [Enterprise Name]**
+2. Click **Add User**
+3. Enter user email
+4. Select role: **Admin**
+5. Click **Create**
+
+<Note>
+Super Admins can only create Client Admin users. Client Admins are responsible for creating Assessors and Reviewers within their enterprise.
+</Note>
+
+### Managing Super Admins
+
+Super Admins can add other Super Admins:
+
+1. Navigate to **Admin → Super Admins**
+2. Click **Add Super Admin**
+3. Enter the user's email
+4. Confirm the action
+
+<Warning>
+Adding a Super Admin grants full platform access. This action is logged and should be approved by platform governance.
+</Warning>
+
+## System Health Monitoring
+
+### Health Check Endpoint
+
+Super Admins can view the platform health status:
+
+```
+GET /health
+```
+
+Response includes:
+- Backend API status
+- Database connectivity
+- Redis connectivity
+- External service status
+
+### Enterprise Health Dashboard
+
+Monitor health across all enterprises:
+
+| Indicator | Green | Yellow | Red |
+|-----------|-------|--------|-----|
+| Last Activity | < 24 hours | 24-72 hours | > 72 hours |
+| Error Rate | < 1% | 1-5% | > 5% |
+| User Count | > 0 active | Low activity | No activity |
+
+## Alert Management
+
+### Alert Types
+
+| Alert Type | Description | Severity |
+|------------|-------------|----------|
+| Enterprise Health | Issues with enterprise connectivity | Medium-High |
+| Authentication | Login failures, suspicious activity | High |
+| Performance | Slow responses, high latency | Medium |
+| Data | Database issues, storage warnings | High |
+| System | Infrastructure problems | Critical |
+
+### Responding to Alerts
+
+1. Navigate to **Admin → Alerts**
+2. Review alert details
+3. Take appropriate action
+4. Mark alert as resolved
+5. Add resolution notes
+
+## Audit and Compliance
+
+All Super Admin actions are logged:
+
+| Action | Logged Details |
+|--------|----------------|
+| Enterprise Creation | Enterprise name, creation timestamp, creator |
+| User Creation | User email, role, enterprise, creator |
+| Enterprise Deactivation | Enterprise, reason, timestamp |
+| Super Admin Addition | Added user, action by, timestamp |
+| Alert Response | Alert ID, action taken, responder |
+
+## API Endpoints
+
+Super Admin-only endpoints:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/admin/enterprises` | GET | List all enterprises |
+| `/api/v1/admin/enterprises` | POST | Create enterprise |
+| `/api/v1/admin/enterprises/{id}` | PATCH | Update enterprise |
+| `/api/v1/admin/enterprises/{id}/users` | GET | List enterprise users |
+| `/api/v1/admin/enterprises/{id}/users` | POST | Add user to enterprise |
+| `/api/v1/admin/health` | GET | Platform health status |
+| `/api/v1/admin/alerts` | GET | List system alerts |
+| `/api/v1/admin/alerts/{id}` | PATCH | Update alert status |
+| `/api/v1/admin/super-admins` | GET/POST | Manage Super Admins |
+
+### Example: Create Enterprise
+
+```bash
+curl -X POST /api/v1/admin/enterprises \
+  -H "Authorization: Bearer $SUPER_ADMIN_TOKEN" \
+  -d '{
+    "name": "ACME Corporation",
+    "country": "US",
+    "registration_number": "REG-12345"
+  }'
+```
+
+### Example: Add Client Admin
+
+```bash
+curl -X POST /api/v1/admin/enterprises/{enterprise_id}/users \
+  -H "Authorization: Bearer $SUPER_ADMIN_TOKEN" \
+  -d '{
+    "email": "admin@acme.com",
+    "role": "admin"
+  }'
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Principle of Least Privilege">
+    - Only grant Super Admin to platform operators
+    - Regularly review Super Admin list
+    - Remove access when no longer needed
+    - Use individual accounts, not shared credentials
+  </Accordion>
+  
+  <Accordion title="Change Management">
+    - Document all enterprise changes
+    - Follow change approval processes
+    - Test changes in staging environment
+    - Communicate changes to affected parties
+  </Accordion>
+  
+  <Accordion title="Monitoring">
+    - Review platform health daily
+    - Respond to alerts promptly
+    - Investigate anomalies
+    - Maintain runbooks for common issues
+  </Accordion>
+  
+  <Accordion title="Security">
+    - Use strong authentication (MFA)
+    - Access from trusted networks only
+    - Regular security reviews
+    - Report suspicious activity immediately
+  </Accordion>
+</AccordionGroup>

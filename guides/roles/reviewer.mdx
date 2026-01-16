@@ -1,0 +1,277 @@
+---
+title: "Reviewer Role"
+description: "Assessment review and read-only access"
+---
+
+## Overview
+
+Reviewers have read-only access to Business Risk Assessments and related data. They can view assessments, dashboard metrics, and audit logs but cannot create or modify any data. This role is designed for oversight, compliance, and audit functions.
+
+## Key Responsibilities
+
+| Responsibility | Description |
+|---------------|-------------|
+| Assessment Review | Review submitted and approved BRAs |
+| Compliance Monitoring | Monitor risk levels and control effectiveness |
+| Audit Support | Access data for internal and external audits |
+| Dashboard Monitoring | View risk metrics and trends |
+| Report Generation | Extract data for reporting purposes |
+
+## Access Scope
+
+### Entity-Based Access
+
+Like Assessors, Reviewers are assigned to specific entities:
+
+```
+Reviewer: Maria Garcia
+├── Assigned: ACME Bank Brasil S.A.
+│   ├── All Business Units
+└── Assigned: ACME Seguros Ltda.
+    └── All Business Units
+```
+
+<Info>
+Reviewers can view data from their assigned entities but cannot modify anything.
+</Info>
+
+### Permissions
+
+| Feature | Permission |
+|---------|------------|
+| Dashboard | View (filtered to assigned entities) |
+| BRAs | View only |
+| Risk Scenarios | View only |
+| Controls | View only |
+| Mitigation Actions | View only |
+| Risk Library | View only |
+| Governance | View only |
+| Audit Logs | View (assigned entities) |
+| Users | No access |
+
+## Reviewer Workflows
+
+### Reviewing BRAs
+
+<Steps>
+  <Step title="Navigate to BRAs">
+    Go to **BRAs** page
+    - See list of all BRAs for assigned entities
+    - Filter by status, entity, period
+  </Step>
+  
+  <Step title="Open BRA Details">
+    Click on a BRA to view:
+    - Assessment metadata
+    - Risk scenario list
+    - Control linkages
+    - Risk ratings
+  </Step>
+  
+  <Step title="Review Scenarios">
+    In the Risk Scenarios tab:
+    - View inherent and residual risk ratings
+    - See justifications provided
+    - Check assessment completion
+  </Step>
+  
+  <Step title="Review Controls">
+    In the Controls tab:
+    - View linked controls
+    - See ToD and ToE ratings
+    - Review effectiveness calculations
+  </Step>
+  
+  <Step title="Review Summary">
+    In the Review & Finalize tab:
+    - Read executive summary
+    - See key findings
+    - View risks above appetite
+    - Check mitigation actions
+  </Step>
+</Steps>
+
+### Dashboard Monitoring
+
+Reviewers can monitor risk metrics:
+
+#### Key Metrics
+- Total risks for assigned entities
+- Risks above appetite
+- Control effectiveness distribution
+- Overdue actions count
+
+#### Visualizations
+- Risk heat maps (inherent and residual)
+- Risk trend charts
+- Control effectiveness heat map
+- Risk movement tracker
+
+#### Drill-Down
+Click on any metric to see detailed data.
+
+### Audit Log Access
+
+Reviewers can access audit logs for their assigned entities:
+
+1. Navigate to **Settings → Audit Logs** (if accessible via menu)
+2. Or use API: `GET /api/v1/audit`
+3. Filter by:
+   - Date range
+   - Action type
+   - Entity type
+   - User (limited view)
+
+<Note>
+Audit logs show all actions within assigned entities, providing a complete record for compliance and audit purposes.
+</Note>
+
+## Use Cases
+
+### Internal Audit Support
+
+Reviewers supporting internal audit can:
+
+| Activity | How |
+|----------|-----|
+| Review assessment quality | Open BRAs, check justifications |
+| Verify control testing | Check ToD/ToE ratings and dates |
+| Track action completion | View mitigation actions and status |
+| Extract evidence | Use API to export data |
+
+### Compliance Monitoring
+
+Reviewers in compliance functions can:
+
+| Activity | How |
+|----------|-----|
+| Monitor risk levels | Dashboard overview |
+| Check appetite breaches | View "above appetite" metrics |
+| Review control effectiveness | Control heat map analysis |
+| Track remediation | Action plan progress |
+
+### External Audit Preparation
+
+Prepare for external auditors:
+
+| Preparation | Data Available |
+|-------------|----------------|
+| BRA documentation | Full BRA details with justifications |
+| Control evidence | ToD/ToE ratings with testing dates |
+| Risk appetite | Current configuration and history |
+| Audit trail | Complete action logs |
+
+## Dashboard View
+
+Reviewers see a read-only dashboard:
+
+### Visible Data
+- Risk metrics for assigned entities
+- All BRAs (any status) for assigned entities
+- Actions for assigned entities
+- Historical trends
+
+### Interactions
+- Filtering by entity, period
+- Drill-down into detailed views
+- No create/edit capabilities
+
+## Collaboration
+
+### Working with Assessors
+
+- Can view Assessor's work
+- May provide informal feedback
+- Cannot modify assessments
+- Can raise concerns to Client Admin
+
+### Working with Client Admins
+
+- Can report observations
+- May recommend improvements
+- Support governance reviews
+- Provide audit feedback
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Regular Monitoring">
+    - Check dashboard weekly
+    - Review new BRAs when submitted
+    - Monitor action plan progress
+    - Track trend changes
+  </Accordion>
+  
+  <Accordion title="Audit Preparation">
+    - Understand data structure
+    - Know how to navigate reports
+    - Practice data extraction
+    - Maintain documentation
+  </Accordion>
+  
+  <Accordion title="Observation Reporting">
+    - Document concerns formally
+    - Escalate to Client Admin
+    - Track follow-up
+    - Maintain objectivity
+  </Accordion>
+  
+  <Accordion title="Confidentiality">
+    - Protect accessed data
+    - Follow data handling policies
+    - Report only as authorized
+    - Maintain professional skepticism
+  </Accordion>
+</AccordionGroup>
+
+## Limitations
+
+Reviewers cannot:
+
+<CardGroup cols={2}>
+  <Card title="Create or Edit BRAs" icon="file-pen">
+    Cannot create new assessments or modify existing ones
+  </Card>
+  <Card title="Modify Risk Library" icon="book">
+    Cannot add or change products, scenarios, controls, or triggers
+  </Card>
+  <Card title="Create Actions" icon="list-check">
+    Cannot create or update mitigation actions
+  </Card>
+  <Card title="Configure Settings" icon="gear">
+    Cannot change risk appetite or organization structure
+  </Card>
+</CardGroup>
+
+<Tip>
+If you need to make changes, work with an Assessor or Client Admin who has the appropriate permissions.
+</Tip>
+
+## API Access
+
+Reviewers have read-only API access:
+
+| Endpoint | Permission |
+|----------|------------|
+| `/api/v1/bras` | Read only |
+| `/api/v1/bras/{id}/*` | Read only |
+| `/api/v1/mitigation-actions` | Read only |
+| `/api/v1/controls/*` | Read only |
+| `/api/v1/dashboard/metrics` | Read (filtered) |
+| `/api/v1/audit` | Read (assigned entities) |
+
+### Example: Export BRA Data
+
+```bash
+curl -X GET "/api/v1/bras/{bra_id}" \
+  -H "Authorization: Bearer $REVIEWER_TOKEN"
+```
+
+### Example: Get Audit Logs
+
+```bash
+curl -X GET "/api/v1/audit?start_date=2026-01-01&end_date=2026-01-31" \
+  -H "Authorization: Bearer $REVIEWER_TOKEN"
+```
+
+See [API Reference](/api-reference/introduction) for complete documentation.

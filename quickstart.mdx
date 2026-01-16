@@ -1,80 +1,266 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Quick Start Guide"
+description: "Get Risk Legion up and running in 15 minutes"
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before you begin, ensure you have the following installed:
 
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+<CardGroup cols={3}>
+  <Card title="Node.js" icon="node-js">
+    v18.x or higher
+  </Card>
+  <Card title="Python" icon="python">
+    v3.11 or higher
+  </Card>
+  <Card title="PostgreSQL" icon="database">
+    v15+ (via Supabase)
+  </Card>
 </CardGroup>
 
+## Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/risklegion/RL_BRA.git
+cd RL_BRA
+```
+
+## Step 2: Set Up Supabase
+
+### Create a Supabase Project
+
+1. Visit [supabase.com](https://supabase.com) and create a free account
+2. Create a new project
+3. Note your project URL and anon key
+
+### Run Database Migrations
+
+```bash
+# Install Supabase CLI
+npm install -g supabase
+
+# Link to your project
+supabase link --project-ref your-project-ref
+
+# Run migrations
+supabase db push
+```
+
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  The migrations will create all necessary tables, views, functions, and RLS policies.
 </Note>
+
+## Step 3: Configure Environment Variables
+
+### Frontend Environment
+
+Create `risk-legion-frontend/.env`:
+
+```bash
+# Supabase Configuration
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+
+# API Configuration
+VITE_API_BASE_URL=http://localhost:8000
+
+# Optional: Environment
+VITE_ENV=development
+```
+
+### Backend Environment
+
+Create `backend/.env`:
+
+```bash
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# API Configuration
+API_HOST=0.0.0.0
+API_PORT=8000
+CORS_ORIGINS=http://localhost:8080,http://localhost:5173
+
+# JWT Configuration (from Supabase project settings)
+JWT_SECRET=your-jwt-secret
+
+# Optional: Logging
+LOG_LEVEL=INFO
+```
+
+<Warning>
+  Never commit `.env` files to version control. The service role key has admin privileges.
+</Warning>
+
+## Step 4: Install Dependencies
+
+### Frontend
+
+```bash
+cd risk-legion-frontend
+npm install
+```
+
+### Backend
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Step 5: Start Development Servers
+
+### Terminal 1: Backend
+
+```bash
+cd backend
+source venv/bin/activate
+uvicorn app.main:app --reload --port 8000
+```
+
+You should see:
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000
+INFO:     Application startup complete.
+```
+
+### Terminal 2: Frontend
+
+```bash
+cd risk-legion-frontend
+npm run dev
+```
+
+You should see:
+```
+  VITE ready in XXX ms
+  ➜  Local:   http://localhost:8080/
+```
+
+## Step 6: Create Your First User
+
+### Option A: Using Supabase Dashboard
+
+1. Go to your Supabase project → Authentication → Users
+2. Click "Add user"
+3. Enter email and password
+4. Enable "Auto Confirm User"
+
+### Option B: Using Signup Flow
+
+1. Navigate to `http://localhost:8080/auth`
+2. Click "Sign Up"
+3. Enter your details
+4. Confirm email (if email confirmation enabled)
+
+## Step 7: Create an Enterprise
+
+After signing in, you'll need an enterprise to start using the platform.
+
+### Using SQL Editor
+
+```sql
+-- Create your first enterprise
+INSERT INTO enterprises (name, country, status)
+VALUES ('My Company', 'US', 'active')
+RETURNING id;
+
+-- Assign yourself to the enterprise as Client Admin
+INSERT INTO enterprise_users (enterprise_id, user_id, role)
+VALUES (
+  'your-enterprise-id',
+  auth.uid(),
+  'admin'
+);
+```
+
+## Step 8: Verify Installation
+
+### Check API Health
+
+```bash
+curl http://localhost:8000/health
+```
+
+Expected response:
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0"
+}
+```
+
+### Check Frontend
+
+Navigate to `http://localhost:8080` and verify:
+- ✅ Login page loads
+- ✅ Can sign in
+- ✅ Dashboard appears
+- ✅ No console errors
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="Database connection failed" icon="database">
+    **Problem**: Cannot connect to Supabase database
+
+    **Solution**:
+    - Verify `SUPABASE_URL` and `SUPABASE_ANON_KEY` are correct
+    - Check your internet connection
+    - Ensure Supabase project is not paused
+  </Accordion>
+
+  <Accordion title="JWT verification failed" icon="key">
+    **Problem**: Authentication errors when calling API
+
+    **Solution**:
+    - Ensure `JWT_SECRET` matches your Supabase project JWT secret
+    - Check that JWT token hasn't expired
+    - Verify token format in Authorization header
+  </Accordion>
+
+  <Accordion title="CORS errors" icon="globe">
+    **Problem**: Frontend cannot call backend API
+
+    **Solution**:
+    - Verify `CORS_ORIGINS` includes frontend URL
+    - Check `VITE_API_BASE_URL` points to correct backend
+    - Clear browser cache
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<Steps>
+  <Step title="Review Architecture">
+    Understand how Risk Legion is built
+  </Step>
+
+  <Step title="Explore User Roles">
+    Learn about different permission levels
+  </Step>
+
+  <Step title="Read API Documentation">
+    Integrate with Risk Legion API
+  </Step>
+
+  <Step title="Deploy to Production">
+    Set up production environment
+  </Step>
+</Steps>
+
+## Getting Help
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/">
+    Browse the full documentation
+  </Card>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/risklegion/issues">
+    Report bugs and request features
+  </Card>
+</CardGroup>

@@ -1,0 +1,102 @@
+---
+title: 'Get BRA'
+description: 'Retrieve a specific Business Risk Assessment with full details'
+---
+
+## Endpoint
+
+```
+GET /api/v1/bras/{bra_id}
+```
+
+## Description
+
+Retrieves complete details of a Business Risk Assessment, including scenarios, ratings, and controls.
+
+## Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `bra_id` | UUID | Yes | BRA identifier |
+
+## Response
+
+```json
+{
+  "data": {
+    "id": "bra-uuid-001",
+    "name": "Q1 2026 Retail Banking Assessment",
+    "description": "Comprehensive risk assessment for retail operations",
+    "legal_entity_id": "le-uuid-001",
+    "business_unit_id": "bu-uuid-001",
+    "status": "in_progress",
+    "period": "Q1 2026",
+    "assessor": "John Smith",
+    "start_date": "2026-01-01",
+    "created_at": "2026-01-15T10:30:00Z",
+    "updated_at": "2026-01-15T14:45:00Z",
+    "legal_entity": {
+      "id": "le-uuid-001",
+      "name": "ACME Bank Brasil S.A."
+    },
+    "business_unit": {
+      "id": "bu-uuid-001",
+      "name": "Retail Banking"
+    },
+    "scenarios": [
+      {
+        "id": "brs-uuid-001",
+        "risk_scenario_id": "rs-uuid-001",
+        "name": "Consumer Loan Default Risk",
+        "category": "Credit Risk",
+        "included": true,
+        "inherent_rating": {
+          "impact_score": 4,
+          "likelihood_score": 4,
+          "risk_score": 16,
+          "risk_level": "Very High"
+        },
+        "residual_rating": {
+          "impact_score": 3,
+          "likelihood_score": 2,
+          "risk_score": 6,
+          "risk_level": "Medium"
+        }
+      }
+    ],
+    "controls": [
+      {
+        "id": "bsc-uuid-001",
+        "key_control_id": "kc-uuid-001",
+        "key_control_name": "Automated Credit Scoring",
+        "sub_control_id": "sc-uuid-001",
+        "sub_control_name": "Bureau Data Verification",
+        "tod": "B",
+        "toe": "2",
+        "total_effectiveness": "Effective"
+      }
+    ],
+    "summary": {
+      "total_scenarios": 5,
+      "assessed_scenarios": 3,
+      "risks_above_appetite": 1,
+      "completion_percentage": 60
+    }
+  },
+  "message": "BRA retrieved successfully"
+}
+```
+
+## Example Request
+
+```bash
+curl -X GET "https://api.risklegion.com/api/v1/bras/bra-uuid-001" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## Error Responses
+
+| Status | Description |
+|--------|-------------|
+| 404 | BRA not found |
+| 403 | User does not have access to this BRA |

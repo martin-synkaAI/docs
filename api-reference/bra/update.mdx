@@ -1,0 +1,72 @@
+---
+title: 'Update BRA'
+description: 'Update Business Risk Assessment metadata'
+---
+
+## Endpoint
+
+```
+PATCH /api/v1/bras/{bra_id}
+```
+
+## Description
+
+Updates BRA metadata. Only available for BRAs in `draft` or `in_progress` status.
+
+## Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `bra_id` | UUID | Yes | BRA identifier |
+
+## Request Body
+
+```json
+{
+  "name": "Q1 2026 Retail Banking Assessment (Updated)",
+  "description": "Updated description",
+  "period": "Q1-Q2 2026",
+  "assessor": "Jane Doe"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | No | Updated BRA name |
+| `description` | string | No | Updated description |
+| `period` | string | No | Updated period |
+| `assessor` | string | No | Updated assessor |
+
+## Response
+
+```json
+{
+  "data": {
+    "id": "bra-uuid-001",
+    "name": "Q1 2026 Retail Banking Assessment (Updated)",
+    "description": "Updated description",
+    "status": "in_progress",
+    "period": "Q1-Q2 2026",
+    "assessor": "Jane Doe",
+    "updated_at": "2026-01-15T15:30:00Z"
+  },
+  "message": "BRA updated successfully"
+}
+```
+
+## Example Request
+
+```bash
+curl -X PATCH "https://api.risklegion.com/api/v1/bras/bra-uuid-001" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Q1 2026 Retail Banking Assessment (Updated)"
+  }'
+```
+
+## Validation Rules
+
+- Cannot update BRAs with status `approved` or `cancelled`
+- `legal_entity_id` cannot be changed after creation
+- Assessors can only update BRAs they created

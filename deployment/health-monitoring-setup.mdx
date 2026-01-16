@@ -1,0 +1,289 @@
+---
+title: 'Health Monitoring Setup'
+description: 'Configure monitoring and alerting for Risk Legion'
+---
+
+## Overview
+
+Risk Legion includes built-in health monitoring endpoints and can integrate with external monitoring tools for comprehensive observability.
+
+## Built-in Health Checks
+
+### Health Endpoint
+
+```bash
+curl https://api.risklegion.com/health
+```
+
+Response:
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-01-16T10:30:00Z",
+  "version": "1.0.0",
+  "components": {
+    "api": "healthy",
+    "database": "healthy",
+    "redis": "healthy"
+  }
+}
+```
+
+### Docker Health Check
+
+Configured in Dockerfile:
+
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+```
+
+## Uptime Monitoring
+
+### Using UptimeRobot
+
+1. Create account at [uptimerobot.com](https://uptimerobot.com)
+2. Add monitors:
+
+| Monitor | URL | Interval |
+|---------|-----|----------|
+| API Health | `https://api.risklegion.com/health` | 5 min |
+| Frontend | `https://app.risklegion.com` | 5 min |
+
+3. Configure alerts (email, Slack, etc.)
+
+### Using Better Uptime
+
+1. Create account at [betteruptime.com](https://betteruptime.com)
+2. Add heartbeat monitors
+3. Configure status page (optional)
+
+## Error Tracking
+
+### Sentry Integration
+
+#### Backend Setup
+
+```python
+# app/main.py
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+
+sentry_sdk.init(
+    dsn=settings.SENTRY_DSN,
+    environment=settings.ENVIRONMENT,
+    integrations=[FastApiIntegration()],
+    traces_sample_rate=0.1,
+)
+```
+
+#### Frontend Setup
+
+```typescript
+// src/main.tsx
+import * as Sentry from '@sentry/react';
+
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.VITE_ENVIRONMENT,
+  tracesSampleRate: 0.1,
+});
+```
+
+#### Alert Configuration
+
+In Sentry Dashboard:
+1. Go to Alerts
+2. Create alert rules for:
+   - Error spike detection
+   - New issue alerts
+   - Performance regression
+
+## Application Metrics
+
+### Prometheus Integration
+
+#### Backend Metrics
+
+```python
+# app/middleware/metrics.py
+from prometheus_client import Counter, Histogram, generate_latest
+
+REQUEST_COUNT = Counter(
+    'http_requests_total',
+    'Total HTTP requests',
+    ['method', 'endpoint', 'status']
+)
+
+REQUEST_LATENCY = Histogram(
+    'http_request_duration_seconds',
+    'HTTP request latency',
+    ['method', 'endpoint']
+)
+
+@app.get("/metrics")
+async def metrics():
+    return Response(generate_latest(), media_type="text/plain")
+```
+
+#### Prometheus Configuration
+
+```yaml
+# prometheus.yml
+scrape_configs:
+  - job_name: 'risk-legion-api'
+    static_configs:
+      - targets: ['api.risklegion.com:8000']
+    metrics_path: /metrics
+    scrape_interval: 15s
+```
+
+### Grafana Dashboards
+
+Create dashboards for:
+- Request rate and latency
+- Error rate
+- Database query performance
+- Redis cache hit rate
+
+## Log Aggregation
+
+### Structured Logging
+
+```python
+import structlog
+
+structlog.configure(
+    processors=[
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.JSONRenderer()
+    ]
+)
+
+logger = structlog.get_logger()
+logger.info("request_processed", path="/api/v1/bras", duration_ms=45)
+```
+
+### Log Output
+
+```json
+{
+  "timestamp": "2026-01-16T10:30:00.123Z",
+  "level": "info",
+  "event": "request_processed",
+  "path": "/api/v1/bras",
+  "duration_ms": 45
+}
+```
+
+### Log Forwarding
+
+Forward logs to:
+- **AWS CloudWatch**: Native EC2 integration
+- **Datadog**: Via agent or API
+- **ELK Stack**: Via Filebeat
+
+## Alerting
+
+### Alert Types
+
+| Alert | Trigger | Severity |
+|-------|---------|----------|
+| API Down | Health check fails 3x | Critical |
+| High Error Rate | >5% 5xx errors for 5 min | High |
+| High Latency | P95 >2s for 5 min | Warning |
+| Database Issues | Connection failures | Critical |
+
+### Notification Channels
+
+Configure alerts via:
+- Email
+- Slack
+- PagerDuty
+- SMS (Twilio)
+
+### Example Slack Alert
+
+```json
+{
+  "text": "🚨 Risk Legion Alert",
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Alert:* High Error Rate\n*Environment:* Production\n*Details:* Error rate exceeded 5% threshold"
+      }
+    }
+  ]
+}
+```
+
+## Status Page
+
+### Using Atlassian Statuspage
+
+1. Create page at [statuspage.io](https://statuspage.io)
+2. Add components:
+   - API
+   - Web Application
+   - Database
+   - Authentication
+3. Configure automation with API
+
+### Self-Hosted Option
+
+Use [Upptime](https://upptime.js.org/) for GitHub-powered status page.
+
+## Runbooks
+
+### API Unresponsive
+
+1. Check EC2 instance status
+2. SSH to instance
+3. Check Docker container: `docker ps`
+4. Check container logs: `docker logs risk-legion-api`
+5. Restart if needed: `docker restart risk-legion-api`
+
+### Database Connection Issues
+
+1. Check Supabase status
+2. Verify DATABASE_URL is correct
+3. Check connection pool status
+4. Restart application to reset connections
+
+### High Latency
+
+1. Check slow query logs
+2. Review recent deployments
+3. Check resource usage: `docker stats`
+4. Scale resources if needed
+
+## Checklist
+
+<AccordionGroup>
+  <Accordion title="Basic Monitoring">
+    - [ ] Health endpoint configured
+    - [ ] Uptime monitor active
+    - [ ] Alert notifications set up
+  </Accordion>
+  
+  <Accordion title="Error Tracking">
+    - [ ] Sentry configured
+    - [ ] Alert rules created
+    - [ ] On-call rotation defined
+  </Accordion>
+  
+  <Accordion title="Metrics">
+    - [ ] Prometheus/metrics endpoint
+    - [ ] Grafana dashboards
+    - [ ] Performance baselines set
+  </Accordion>
+  
+  <Accordion title="Logging">
+    - [ ] Structured logging enabled
+    - [ ] Log aggregation configured
+    - [ ] Log retention policy set
+  </Accordion>
+</AccordionGroup>

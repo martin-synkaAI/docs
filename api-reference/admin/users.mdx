@@ -1,0 +1,158 @@
+---
+title: 'User Management'
+description: 'Manage enterprise users'
+---
+
+## List Enterprise Users
+
+### Endpoint
+
+```
+GET /api/v1/admin/enterprises/{enterprise_id}/users
+```
+
+### Required Role
+
+- Super Admin (any enterprise)
+- Client Admin (own enterprise)
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "eu-uuid-001",
+      "user_id": "user-uuid-001",
+      "email": "admin@acme.com",
+      "full_name": "John Admin",
+      "role": "admin",
+      "created_at": "2025-06-01T00:00:00Z",
+      "last_login": "2026-01-16T09:00:00Z"
+    },
+    {
+      "id": "eu-uuid-002",
+      "user_id": "user-uuid-002",
+      "email": "assessor@acme.com",
+      "full_name": "Jane Assessor",
+      "role": "assessor",
+      "created_at": "2025-07-15T00:00:00Z",
+      "entity_assignments": [
+        { "legal_entity_id": "le-uuid-001", "name": "Retail Banking" }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## Add User to Enterprise
+
+### Endpoint
+
+```
+POST /api/v1/admin/enterprises/{enterprise_id}/users
+```
+
+### Required Role
+
+- Super Admin (can add any role)
+- Client Admin (can add assessor, reviewer)
+
+### Request Body
+
+```json
+{
+  "email": "newuser@acme.com",
+  "full_name": "New User",
+  "role": "assessor"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | User email address |
+| `full_name` | string | Yes | User's full name |
+| `role` | string | Yes | `admin`, `assessor`, or `reviewer` |
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "eu-uuid-new",
+    "user_id": "user-uuid-new",
+    "email": "newuser@acme.com",
+    "full_name": "New User",
+    "role": "assessor",
+    "created_at": "2026-01-16T10:00:00Z"
+  },
+  "message": "User added to enterprise successfully"
+}
+```
+
+---
+
+## Assign Entity Access
+
+### Endpoint
+
+```
+POST /api/v1/admin/users/{user_id}/entity-roles
+```
+
+### Required Role
+
+- Client Admin
+
+### Request Body
+
+```json
+{
+  "legal_entity_id": "le-uuid-001",
+  "business_unit_id": "bu-uuid-001"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "uer-uuid-new",
+    "user_id": "user-uuid-002",
+    "legal_entity_id": "le-uuid-001",
+    "business_unit_id": "bu-uuid-001",
+    "created_at": "2026-01-16T10:00:00Z"
+  },
+  "message": "Entity access assigned successfully"
+}
+```
+
+---
+
+## Deactivate User
+
+### Endpoint
+
+```
+DELETE /api/v1/admin/enterprises/{enterprise_id}/users/{user_id}
+```
+
+### Required Role
+
+- Super Admin
+- Client Admin (own enterprise)
+
+### Response
+
+```json
+{
+  "message": "User deactivated successfully"
+}
+```
+
+<Note>
+Users are soft-deleted (deactivated). Their historical data remains intact for audit purposes.
+</Note>

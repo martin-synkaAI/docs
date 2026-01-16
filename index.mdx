@@ -1,97 +1,224 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Welcome to Risk Legion"
+description: "Enterprise Business Risk Assessment platform with comprehensive control assurance and governance capabilities"
 ---
 
-## Setting up
+## What is Risk Legion?
 
-Get your documentation site up and running in minutes.
+Risk Legion is a modern, cloud-based Business Risk Assessment (BRA) platform designed to help enterprises identify, assess, and manage business risks through a structured control framework.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Quick Start"
+    icon="rocket"
+    href="/quickstart"
   >
-    Edit your docs locally and preview them in real time.
+    Get up and running with Risk Legion in minutes
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Architecture Overview"
+    icon="sitemap"
+    href="/architecture/overview"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Understand the system architecture and design
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
+    title="API Reference"
+    icon="code"
     href="/api-reference/introduction"
   >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+    Explore the RESTful API endpoints
   </Card>
   <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
+    title="Deployment Guide"
+    icon="server"
+    href="/deployment/local-development"
   >
-    Add sample code to demonstrate how to use your product.
+    Deploy Risk Legion to production
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<AccordionGroup>
+  <Accordion title="Business Risk Assessment (BRA)" icon="shield-check">
+    Comprehensive risk assessment workflow with:
+    - Structured risk identification and categorization
+    - Impact and likelihood analysis
+    - Inherent and residual risk calculations
+    - Heat map visualization
+    - Multi-stage review and approval process
+  </Accordion>
+
+  <Accordion title="Control Assurance" icon="lock">
+    Enterprise control framework management:
+    - Key control library with 80+ pre-built controls
+    - Test of Design (ToD) and Test of Effectiveness (ToE) assessment
+    - Control effectiveness scoring (Strong, Effective, Moderate, Weak, Failing)
+    - Custom control creation and categorization
+    - Control-to-risk mapping
+  </Accordion>
+
+  <Accordion title="Risk Appetite Framework" icon="gauge">
+    Define organizational risk tolerance:
+    - Risk category-level appetite configuration
+    - Impact and likelihood thresholds
+    - Visual risk appetite boundaries
+    - Real-time compliance monitoring
+  </Accordion>
+
+  <Accordion title="Action Plan Management" icon="list-check">
+    Track risk mitigation activities:
+    - Action item creation and assignment
+    - Progress tracking with status updates
+    - Due date management
+    - Completion workflow
+  </Accordion>
+
+  <Accordion title="Enterprise Health Monitoring" icon="heart-pulse">
+    Super admin dashboard with:
+    - Health score calculation (0-100 scale)
+    - Health status classification (Healthy/At Risk/Critical)
+    - Intelligent alert system (8 alert types)
+    - Historical health tracking
+    - MRR and subscription tier tracking
+  </Accordion>
+
+  <Accordion title="Role-Based Access Control" icon="users">
+    Four-tier permission system:
+    - **Super Admin**: Platform-wide management
+    - **Client Admin**: Enterprise management
+    - **Assessor**: Risk assessment creation
+    - **Reviewer**: Assessment review and approval
+  </Accordion>
+</AccordionGroup>
+
+## Technology Stack
+
+<CardGroup cols={3}>
+  <Card title="Frontend" icon="react">
+    - React 18 with TypeScript
+    - Vite build tool
+    - TanStack Query v5
+    - shadcn/ui components
+    - Recharts for visualizations
+  </Card>
+  <Card title="Backend" icon="python">
+    - FastAPI (Python)
+    - Supabase PostgreSQL
+    - Row-Level Security (RLS)
+    - JWT authentication
+    - Pydantic validation
+  </Card>
+  <Card title="Infrastructure" icon="cloud">
+    - Supabase (Database + Auth)
+    - AWS EC2 (Backend hosting)
+    - Vercel (Frontend hosting)
+    - Docker support
+  </Card>
+</CardGroup>
+
+## Core Concepts
+
+### Business Risk Assessment (BRA)
+
+A BRA is a structured assessment that identifies and evaluates business risks across multiple categories:
+
+- **Strategic Risks**: Market competition, mergers & acquisitions
+- **Operational Risks**: Business continuity, supply chain
+- **Financial Risks**: Fraud, cash flow, budget management
+- **Compliance Risks**: Regulatory compliance, data privacy
+- **Technology Risks**: Cybersecurity, system availability
+- **Reputational Risks**: Brand damage, customer trust
+
+Each risk is assessed for:
+- **Impact**: Severity of consequences (1-5 scale)
+- **Likelihood**: Probability of occurrence (1-5 scale)
+- **Inherent Risk**: Risk level without controls
+- **Residual Risk**: Risk level after control application
+
+### Control Effectiveness
+
+Controls are evaluated using two dimensions:
+
+1. **Test of Design (ToD)**: How well the control is designed
+   - Optimized, Defined, Ad-Hoc, Not Documented
+
+2. **Test of Effectiveness (ToE)**: How well the control operates
+   - Always Effective, Usually Effective, Sometimes Effective, Rarely Effective, Not Tested
+
+Combined scoring produces overall effectiveness:
+- **Strong** (90-100): Optimal design and execution
+- **Effective** (70-89): Well-designed and mostly effective
+- **Moderate** (50-69): Adequate but room for improvement
+- **Weak** (30-49): Significant gaps in design or execution
+- **Failing** (0-29): Critical deficiencies
+
+## User Workflows
+
+### Assessor Workflow
+1. Create new BRA
+2. Identify and categorize risks
+3. Assess impact and likelihood
+4. Map controls to risks
+5. Submit for review
+
+### Reviewer Workflow
+1. Review submitted BRAs
+2. Validate risk assessments
+3. Request changes if needed
+4. Approve final assessment
+
+### Client Admin Workflow
+1. Manage enterprise users
+2. Configure risk appetite
+3. Create custom controls
+4. Monitor action plans
+5. View enterprise dashboards
+
+### Super Admin Workflow
+1. Manage all enterprises
+2. Monitor enterprise health
+3. Handle alerts (churn risk, adoption gaps)
+4. Track platform metrics
+5. Manage super admin users
+
+## Getting Help
+
+<CardGroup cols={2}>
+  <Card
+    title="Support"
+    icon="headset"
+    href="mailto:support@risklegion.com"
+  >
+    Contact our support team
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/risklegion/issues"
   >
-    Display images and other media.
+    Report bugs and request features
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+</CardGroup>
 
-## Need inspiration?
+## Next Steps
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Steps>
+  <Step title="Review Architecture">
+    Understand the system architecture and design patterns
+    <Card href="/architecture/overview" />
+  </Step>
+  <Step title="Set Up Development Environment">
+    Install dependencies and configure your local environment
+    <Card href="/deployment/local-development" />
+  </Step>
+  <Step title="Explore API">
+    Learn about available endpoints and authentication
+    <Card href="/api-reference/introduction" />
+  </Step>
+  <Step title="Deploy to Production">
+    Configure production environment and deploy
+    <Card href="/deployment/frontend-deployment" />
+  </Step>
+</Steps>

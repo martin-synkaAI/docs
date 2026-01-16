@@ -1,0 +1,90 @@
+---
+title: 'Assess Control'
+description: 'Update control effectiveness ratings (ToD/ToE)'
+---
+
+## Endpoint
+
+```
+PATCH /api/v1/controls/sub-controls/{sub_control_id}
+```
+
+## Description
+
+Updates the Test of Design (ToD) and Test of Effectiveness (ToE) ratings for a sub-control. The system automatically calculates the Total Effectiveness.
+
+## Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `sub_control_id` | UUID | Yes | Sub-control identifier |
+
+## Request Body
+
+```json
+{
+  "tod": "B",
+  "toe": "2",
+  "testing_date": "2026-01-15",
+  "tested_by": "John Smith",
+  "evidence_notes": "Sample testing of 100 transactions completed",
+  "tod_justification": "Control design is well-structured with documented procedures",
+  "toe_justification": "93% effectiveness rate observed in testing"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `tod` | string | No | Test of Design: A (Excellent) to E (Inadequate) |
+| `toe` | string | No | Test of Effectiveness: 1 (Highly Effective) to 5 (Ineffective) |
+| `testing_date` | date | No | Date control was tested |
+| `tested_by` | string | No | Name of tester |
+| `evidence_notes` | string | No | Testing evidence documentation |
+| `tod_justification` | string | No | Justification for ToD rating |
+| `toe_justification` | string | No | Justification for ToE rating |
+
+## Response
+
+```json
+{
+  "data": {
+    "id": "sc-uuid-001",
+    "key_control_id": "kc-uuid-001",
+    "name": "Bureau Data Verification",
+    "tod": "B",
+    "toe": "2",
+    "total_effectiveness": "Effective",
+    "testing_date": "2026-01-15",
+    "tested_by": "John Smith",
+    "evidence_notes": "Sample testing of 100 transactions completed",
+    "updated_at": "2026-01-16T10:00:00Z"
+  },
+  "message": "Sub-control updated successfully"
+}
+```
+
+## Total Effectiveness Calculation
+
+The system calculates total effectiveness based on the ToD/ToE matrix:
+
+| ToD \ ToE | 1 | 2 | 3 | 4 | 5 |
+|-----------|---|---|---|---|---|
+| **A** | Highly Effective | Highly Effective | Effective | Moderately Effective | Less Effective |
+| **B** | Highly Effective | Effective | Effective | Moderately Effective | Less Effective |
+| **C** | Effective | Effective | Moderately Effective | Less Effective | Not Effective |
+| **D** | Moderately Effective | Moderately Effective | Less Effective | Not Effective | Not Effective |
+| **E** | Less Effective | Less Effective | Not Effective | Not Effective | Not Effective |
+
+## Example Request
+
+```bash
+curl -X PATCH "https://api.risklegion.com/api/v1/controls/sub-controls/sc-uuid-001" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tod": "B",
+    "toe": "2",
+    "testing_date": "2026-01-15",
+    "tested_by": "John Smith"
+  }'
+```

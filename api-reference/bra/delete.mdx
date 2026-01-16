@@ -1,0 +1,96 @@
+---
+title: 'Approve/Cancel BRA'
+description: 'Approve or cancel a Business Risk Assessment'
+---
+
+## Approve BRA
+
+### Endpoint
+
+```
+POST /api/v1/bras/{bra_id}/approve
+```
+
+### Description
+
+Approves a BRA and creates an immutable snapshot. Only Client Admins can approve BRAs.
+
+### Required Role
+
+- Client Admin
+
+### Request Body
+
+```json
+{
+  "final_comment": "Assessment reviewed and approved. All risks adequately assessed."
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "bra-uuid-001",
+    "status": "approved",
+    "approved_by": "user-uuid",
+    "approved_at": "2026-01-16T10:00:00Z",
+    "final_comment": "Assessment reviewed and approved.",
+    "snapshot_id": "snapshot-uuid-001"
+  },
+  "message": "BRA approved successfully"
+}
+```
+
+### Validation
+
+- All scenarios must have inherent and residual ratings
+- BRA must be in `in_progress` or `under_review` status
+- Only Client Admins can approve
+
+---
+
+## Cancel BRA
+
+### Endpoint
+
+```
+POST /api/v1/bras/{bra_id}/cancel
+```
+
+### Description
+
+Cancels a BRA. Cancelled BRAs cannot be reopened.
+
+### Required Role
+
+- Client Admin
+
+### Request Body
+
+```json
+{
+  "cancellation_reason": "Duplicate assessment - merged with Q2 review"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "bra-uuid-001",
+    "status": "cancelled",
+    "cancelled_by": "user-uuid",
+    "cancelled_at": "2026-01-16T10:00:00Z",
+    "cancellation_reason": "Duplicate assessment"
+  },
+  "message": "BRA cancelled successfully"
+}
+```
+
+### Validation
+
+- Cannot cancel approved BRAs
+- Cancellation reason is recommended but not required

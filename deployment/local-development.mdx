@@ -1,0 +1,235 @@
+---
+title: 'Local Development'
+description: 'Set up Risk Legion for local development'
+---
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **Node.js** | 18+ | Frontend development |
+| **Python** | 3.11+ | Backend development |
+| **Docker** | 24+ | Container runtime |
+| **Git** | Latest | Version control |
+
+## Quick Start
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/risklegion/risk-legion.git
+cd risk-legion
+```
+
+### 2. Set Up Backend
+
+```bash
+cd backend
+
+# Install uv (if not installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create virtual environment and install dependencies
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv pip install -r requirements.txt
+
+# Copy environment file
+cp .env.example .env
+```
+
+### 3. Configure Environment
+
+Edit `backend/.env`:
+
+```bash
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+DATABASE_URL=postgresql://postgres:password@db.your-project.supabase.co:5432/postgres
+
+# Application
+SECRET_KEY=your-secret-key-generate-one
+ENVIRONMENT=development
+DEBUG=true
+
+# Redis (optional for local dev)
+REDIS_URL=redis://localhost:6379
+```
+
+### 4. Start Backend Services
+
+**Option A: With Docker Compose (Recommended)**
+
+```bash
+docker-compose up -d
+```
+
+**Option B: Without Docker**
+
+```bash
+# Start Redis (if needed)
+docker run -d -p 6379:6379 redis:7-alpine
+
+# Start FastAPI
+make run  # or: uvicorn app.main:app --reload --port 8000
+```
+
+### 5. Set Up Frontend
+
+```bash
+cd ../risk-legion-frontend
+
+# Install dependencies
+npm install  # or: pnpm install / bun install
+
+# Copy environment file
+cp .env.example .env.local
+```
+
+Edit `.env.local`:
+
+```bash
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_API_URL=http://localhost:8000
+```
+
+### 6. Start Frontend
+
+```bash
+npm run dev
+```
+
+Frontend available at: `http://localhost:5173`
+
+## Makefile Commands
+
+The backend includes a Makefile for common tasks:
+
+```bash
+make install      # Install dependencies with uv
+make dev          # Install dev dependencies
+make run          # Start dev server with hot reload
+make test         # Run tests with coverage
+make lint         # Run ruff linter
+make format       # Format code
+make type-check   # Run mypy type checking
+make docker-up    # Start Docker Compose services
+make docker-down  # Stop Docker Compose services
+make check        # Run full quality suite
+```
+
+## Development Workflow
+
+### API Development
+
+1. Make changes to `backend/app/`
+2. Server auto-reloads on file changes
+3. Test at `http://localhost:8000/docs` (Swagger UI)
+4. Run tests: `make test`
+
+### Frontend Development
+
+1. Make changes to `risk-legion-frontend/src/`
+2. Vite auto-reloads on file changes
+3. Test in browser at `http://localhost:5173`
+
+### Database Changes
+
+1. Make schema changes in Supabase Dashboard
+2. Update corresponding Pydantic models
+3. Test with real data
+
+## Testing
+
+### Backend Tests
+
+```bash
+cd backend
+
+# Run all tests
+make test
+
+# Run specific test file
+pytest tests/test_bras.py -v
+
+# Run with coverage
+pytest --cov=app --cov-report=html
+```
+
+### Frontend Tests
+
+```bash
+cd risk-legion-frontend
+
+# Run tests (if configured)
+npm test
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Port already in use">
+    ```bash
+    # Find process on port 8000
+    lsof -i :8000
+    
+    # Kill process
+    kill -9 <PID>
+    ```
+  </Accordion>
+  
+  <Accordion title="Database connection failed">
+    - Verify `DATABASE_URL` in `.env`
+    - Check Supabase project is active
+    - Ensure IP is whitelisted in Supabase
+  </Accordion>
+  
+  <Accordion title="Redis connection failed">
+    - Redis is optional for local dev
+    - System falls back to in-memory storage
+    - To use Redis: `docker run -d -p 6379:6379 redis:7-alpine`
+  </Accordion>
+  
+  <Accordion title="CORS errors">
+    - Check `ALLOWED_ORIGINS` in backend config
+    - Ensure frontend URL is included
+    - Default: `http://localhost:5173`
+  </Accordion>
+</AccordionGroup>
+
+## IDE Setup
+
+### VS Code Extensions
+
+Recommended extensions:
+
+```json
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "charliermarsh.ruff",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint"
+  ]
+}
+```
+
+### VS Code Settings
+
+```json
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+  "python.formatting.provider": "none",
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  }
+}
+```

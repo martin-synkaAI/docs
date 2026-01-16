@@ -1,0 +1,122 @@
+---
+title: 'Audit Trail'
+description: 'Access audit logs for compliance and review'
+---
+
+## List Audit Logs
+
+### Endpoint
+
+```
+GET /api/v1/audit
+```
+
+### Required Role
+
+- Client Admin
+- Reviewer
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `action_type` | string | Filter by action: `create`, `update`, `delete`, `approve` |
+| `entity_type` | string | Filter by entity: `bra`, `control`, `user`, etc. |
+| `user_id` | UUID | Filter by specific user |
+| `start_date` | date | Start of date range |
+| `end_date` | date | End of date range |
+| `page` | integer | Page number |
+| `page_size` | integer | Items per page |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "log-uuid-001",
+      "user_id": "user-uuid-001",
+      "user_email": "admin@acme.com",
+      "user_name": "John Admin",
+      "action_type": "approve",
+      "entity_type": "bra",
+      "entity_id": "bra-uuid-001",
+      "action_details": {
+        "bra_name": "Q1 2026 Assessment",
+        "final_comment": "Assessment approved",
+        "snapshot_id": "snapshot-uuid-001"
+      },
+      "ip_address": "192.168.1.100",
+      "user_agent": "Mozilla/5.0 ...",
+      "status": "success",
+      "created_at": "2026-01-16T10:00:00Z"
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+---
+
+## Audit Log Details
+
+| Field | Description |
+|-------|-------------|
+| `action_type` | Type of action performed |
+| `entity_type` | Type of entity affected |
+| `entity_id` | ID of the affected entity |
+| `action_details` | JSON with specific change information |
+| `ip_address` | Source IP address |
+| `user_agent` | Client browser/application |
+| `status` | `success` or `failed` |
+
+## Action Types
+
+| Type | Description |
+|------|-------------|
+| `create` | New record created |
+| `update` | Record modified |
+| `delete` | Record archived/deleted |
+| `approve` | BRA approved |
+| `cancel` | BRA cancelled |
+| `login` | User authentication |
+| `logout` | User signed out |
+| `access_denied` | Permission denied event |
+
+## Entity Types
+
+| Type | Description |
+|------|-------------|
+| `bra` | Business Risk Assessment |
+| `bra_rating` | Risk rating |
+| `control` | Key or sub-control |
+| `mitigation_action` | Action plan |
+| `legal_entity` | Organization structure |
+| `user` | User management |
+| `risk_appetite` | Appetite configuration |
+
+---
+
+## Export Audit Logs
+
+### Endpoint
+
+```
+GET /api/v1/audit/export
+```
+
+### Query Parameters
+
+Same as list endpoint, plus:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `format` | string | `json` or `csv` |
+
+### Response
+
+Returns downloadable file in specified format.
+
+<Note>
+Audit logs are immutable and cannot be modified or deleted. All entries are retained per data retention policy (minimum 7 years).
+</Note>

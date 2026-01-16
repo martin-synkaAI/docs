@@ -1,0 +1,313 @@
+---
+title: "Control Assurance"
+description: "Managing and assessing control effectiveness in Risk Legion"
+---
+
+## Overview
+
+Control Assurance in Risk Legion provides a framework for evaluating the design and operational effectiveness of controls that mitigate business risks. The framework uses a dual assessment approach: **Test of Design (ToD)** and **Test of Effectiveness (ToE)**.
+
+## Control Hierarchy
+
+Risk Legion organizes controls in a two-level hierarchy:
+
+```
+Key Control (Parent)
+├── Sub-Control 1
+├── Sub-Control 2
+└── Sub-Control 3
+```
+
+### Key Controls
+
+Key Controls are high-level control categories that represent major control themes:
+
+- **Preventive Controls** - Stop risks from occurring
+- **Detective Controls** - Identify risks that have occurred
+- **Corrective Controls** - Remediate identified issues
+
+Examples:
+- Automated Credit Scoring and Risk Rating
+- Multi-Factor Authentication (MFA)
+- Real-Time AML Transaction Monitoring
+- Asset-Liability Committee (ALCO)
+
+### Sub-Controls
+
+Sub-Controls are specific control instances under each Key Control:
+
+- Represent individual control activities
+- Have their own ToD and ToE assessments
+- Link directly to risk scenarios in BRAs
+
+Examples under "Multi-Factor Authentication (MFA)":
+- Biometric Authentication Enrollment
+- Failed Authentication Lockout
+- Session Timeout Policy
+
+## Test of Design (ToD)
+
+Test of Design evaluates **how well a control is designed** to mitigate the identified risk.
+
+### ToD Rating Scale
+
+| Grade | Rating | Description |
+|-------|--------|-------------|
+| **A** | Excellent | Control design is comprehensive, automated, and addresses all aspects of the risk |
+| **B** | Good | Control design is well-structured with minor gaps that don't significantly impact effectiveness |
+| **C** | Adequate | Control design meets minimum requirements but has noticeable gaps |
+| **D** | Weak | Control design has significant gaps that may allow risk to materialize |
+| **E** | Inadequate | Control design is fundamentally flawed or non-existent |
+
+### ToD Assessment Criteria
+
+When assessing ToD, consider:
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="file-lines">
+    Are control procedures documented?
+    - Policy documents exist
+    - Procedures are current
+    - Responsibilities are clear
+  </Card>
+  <Card title="Coverage" icon="shield">
+    Does the control address the full risk?
+    - All risk scenarios covered
+    - No significant gaps
+    - Edge cases considered
+  </Card>
+  <Card title="Automation" icon="robot">
+    Is the control automated where appropriate?
+    - Manual vs. automated balance
+    - Consistent execution
+    - Scalable design
+  </Card>
+  <Card title="Integration" icon="puzzle-piece">
+    Does the control fit the process?
+    - Integrated into workflows
+    - Not easily bypassed
+    - Sustainable long-term
+  </Card>
+</CardGroup>
+
+## Test of Effectiveness (ToE)
+
+Test of Effectiveness evaluates **how well the control operates in practice**.
+
+### ToE Rating Scale
+
+| Grade | Rating | Description |
+|-------|--------|-------------|
+| **1** | Highly Effective | Control operates consistently and catches/prevents 95%+ of relevant issues |
+| **2** | Effective | Control operates reliably with occasional minor exceptions (85-95%) |
+| **3** | Moderately Effective | Control operates adequately but with regular exceptions (70-85%) |
+| **4** | Less Effective | Control has significant operational gaps (50-70%) |
+| **5** | Ineffective | Control fails to operate as designed (&lt;50%) |
+
+### ToE Assessment Methods
+
+| Method | Description | When to Use |
+|--------|-------------|-------------|
+| **Sample Testing** | Test a sample of transactions/activities | High-volume automated controls |
+| **Walkthrough** | Observe control in operation | Manual controls, processes |
+| **Inquiry** | Interview control operators | Understanding procedures |
+| **Inspection** | Review documentation/evidence | Periodic reviews, approvals |
+| **Re-performance** | Re-execute the control | Critical calculations |
+
+## Total Effectiveness Calculation
+
+Risk Legion automatically calculates **Total Effectiveness** from the ToD and ToE ratings:
+
+```
+Total Effectiveness = f(ToD, ToE)
+```
+
+### Effectiveness Matrix
+
+|  | ToE 1 | ToE 2 | ToE 3 | ToE 4 | ToE 5 |
+|--|-------|-------|-------|-------|-------|
+| **ToD A** | Highly Effective | Highly Effective | Effective | Moderately Effective | Less Effective |
+| **ToD B** | Highly Effective | Effective | Effective | Moderately Effective | Less Effective |
+| **ToD C** | Effective | Effective | Moderately Effective | Less Effective | Not Effective |
+| **ToD D** | Moderately Effective | Moderately Effective | Less Effective | Not Effective | Not Effective |
+| **ToD E** | Less Effective | Less Effective | Not Effective | Not Effective | Not Effective |
+
+<Note>
+The matrix uses a conservative approach: both design AND effectiveness must be strong for a control to be rated highly effective.
+</Note>
+
+## Control Assurance Workflow
+
+### Step 1: Identify Controls
+
+During BRA creation, controls are linked to risk scenarios:
+
+1. System suggests controls from the Risk Library
+2. Assessor reviews and confirms relevant controls
+3. Additional controls can be added as needed
+
+### Step 2: Assess Test of Design
+
+For each sub-control:
+
+1. Review control documentation
+2. Evaluate design against risk
+3. Assign ToD rating (A-E)
+4. Provide justification
+
+```json
+{
+  "sub_control_id": "sc-001",
+  "tod": "B",
+  "tod_justification": "MFA design is comprehensive with biometric and OTP options. Minor gap: legacy systems not yet integrated."
+}
+```
+
+### Step 3: Assess Test of Effectiveness
+
+For each sub-control:
+
+1. Select testing method
+2. Execute testing procedure
+3. Document testing date and tester
+4. Assign ToE rating (1-5)
+5. Provide justification and evidence notes
+
+```json
+{
+  "sub_control_id": "sc-001",
+  "toe": "2",
+  "toe_justification": "Sample testing of 100 transactions showed 93% MFA compliance. 7% exceptions were authorized by security team.",
+  "testing_date": "2026-01-15",
+  "tested_by": "Jane Smith",
+  "evidence_notes": "Sample report attached, exception log reviewed"
+}
+```
+
+### Step 4: Review and Update
+
+Controls should be reassessed:
+- At each BRA assessment period
+- After significant control changes
+- Following control failures or incidents
+- When new risks are identified
+
+## Control Heat Map
+
+The Control Heat Map visualizes control effectiveness across your organization:
+
+### Dashboard View
+
+The dashboard displays:
+- **ToD vs ToE Matrix** - Distribution of controls by ratings
+- **Effectiveness Summary** - Counts by effectiveness level
+- **Trend Indicators** - Changes from previous period
+
+### Interpreting the Heat Map
+
+<Steps>
+  <Step title="Identify Clusters">
+    Look for concentrations of controls in specific cells
+  </Step>
+  <Step title="Assess Risk Areas">
+    Controls in bottom-right (D/E + 4/5) need immediate attention
+  </Step>
+  <Step title="Track Improvements">
+    Monitor movement toward top-left over time
+  </Step>
+  <Step title="Plan Remediation">
+    Prioritize controls with high residual risk scenarios
+  </Step>
+</Steps>
+
+## Key Control Effectiveness Aggregation
+
+Key Control effectiveness is aggregated from its Sub-Controls using a **worst-case approach**:
+
+```python
+def aggregate_key_control_effectiveness(sub_controls):
+    # If any sub-control is "Not Effective", key control is "Not Effective"
+    if any(sc.total_effectiveness == "Not Effective" for sc in sub_controls):
+        return "Not Effective"
+    
+    # If any sub-control is "Less Effective", key control is "Less Effective"
+    if any(sc.total_effectiveness == "Less Effective" for sc in sub_controls):
+        return "Less Effective"
+    
+    # Continue up the scale...
+```
+
+<Warning>
+This conservative approach ensures that weaknesses in individual sub-controls are not masked by stronger controls.
+</Warning>
+
+## Control Library Management
+
+### Adding Controls
+
+Client Admins can add custom controls:
+
+1. Navigate to **Governance → Risk Library → Key Controls**
+2. Click **Add Key Control**
+3. Enter control details (name, category, description)
+4. Add Sub-Controls under the Key Control
+
+### Linking Controls to Scenarios
+
+Controls can be linked to risk scenarios:
+
+1. Navigate to **Governance → Risk Library → Risk Scenarios**
+2. Select a scenario
+3. Click **Link Controls**
+4. Select relevant Key Controls and Sub-Controls
+
+### Archiving Controls
+
+Controls can be archived (soft delete):
+
+1. Click the archive icon on the control
+2. Confirm archiving
+3. Archived controls remain in historical BRAs
+4. Can be restored if needed
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Consistent Rating Criteria">
+    - Develop rating guidelines for your organization
+    - Train assessors on consistent application
+    - Use calibration sessions for alignment
+  </Accordion>
+  
+  <Accordion title="Evidence-Based Assessments">
+    - Document testing procedures
+    - Retain evidence of testing
+    - Reference specific findings in justifications
+  </Accordion>
+  
+  <Accordion title="Regular Updates">
+    - Reassess controls at least annually
+    - Update after significant changes
+    - Track trends over time
+  </Accordion>
+  
+  <Accordion title="Remediation Tracking">
+    - Create action plans for weak controls
+    - Set improvement targets
+    - Monitor remediation progress
+  </Accordion>
+</AccordionGroup>
+
+## API Reference
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/controls/key-controls` | GET | List key controls |
+| `/api/v1/controls/key-controls` | POST | Create key control |
+| `/api/v1/controls/sub-controls` | GET | List sub-controls |
+| `/api/v1/controls/sub-controls` | POST | Create sub-control |
+| `/api/v1/controls/sub-controls/{id}` | PATCH | Update sub-control (ToD/ToE) |
+| `/api/v1/controls/effectiveness` | GET | Get effectiveness summary |
+| `/api/v1/controls/heat-map` | GET | Get heat map data |
+
+See [API Reference](/api-reference/introduction) for complete documentation.

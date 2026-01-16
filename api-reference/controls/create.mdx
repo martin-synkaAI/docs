@@ -1,0 +1,91 @@
+---
+title: 'Create Controls'
+description: 'Create key controls and sub-controls'
+---
+
+## Create Key Control
+
+### Endpoint
+
+```
+POST /api/v1/controls/key-controls
+```
+
+### Required Role
+
+- Client Admin
+
+### Request Body
+
+```json
+{
+  "name": "Transaction Monitoring System",
+  "description": "Real-time monitoring of all financial transactions"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "kc-uuid-new",
+    "name": "Transaction Monitoring System",
+    "description": "Real-time monitoring of all financial transactions",
+    "archived": false,
+    "created_at": "2026-01-16T10:00:00Z"
+  },
+  "message": "Key control created successfully"
+}
+```
+
+---
+
+## Create Sub-Control
+
+### Endpoint
+
+```
+POST /api/v1/controls/sub-controls
+```
+
+### Required Role
+
+- Client Admin
+
+### Request Body
+
+```json
+{
+  "key_control_id": "kc-uuid-001",
+  "name": "High-Value Transaction Alerts",
+  "description": "Alerts for transactions exceeding R$ 50,000",
+  "tod": "A",
+  "toe": "2"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `key_control_id` | UUID | Yes | Parent key control |
+| `name` | string | Yes | Sub-control name |
+| `description` | string | No | Description |
+| `tod` | string | No | Test of Design (A-E) |
+| `toe` | string | No | Test of Effectiveness (1-5) |
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "sc-uuid-new",
+    "key_control_id": "kc-uuid-001",
+    "name": "High-Value Transaction Alerts",
+    "tod": "A",
+    "toe": "2",
+    "total_effectiveness": "Highly Effective",
+    "created_at": "2026-01-16T10:00:00Z"
+  },
+  "message": "Sub-control created successfully"
+}
+```

@@ -1,0 +1,187 @@
+---
+title: 'Mitigation Actions'
+description: 'Manage risk mitigation action plans'
+---
+
+## List Actions
+
+### Endpoint
+
+```
+GET /api/v1/mitigation-actions
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `bra_id` | UUID | Filter by BRA |
+| `status` | string | `created`, `in_progress`, `completed` |
+| `priority` | string | `low`, `medium`, `high`, `critical` |
+| `overdue_only` | boolean | Show only overdue actions |
+| `archived` | boolean | Include archived (default: false) |
+| `page` | integer | Page number |
+| `page_size` | integer | Items per page |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "ma-uuid-001",
+      "action": "Implement MFA for all administrative access",
+      "owner": "security@acme.com",
+      "status": "in_progress",
+      "priority": "high",
+      "due_date": "2026-03-31",
+      "action_type": "Technology",
+      "bra_id": "bra-uuid-001",
+      "bra_risk_scenario_id": "brs-uuid-001",
+      "is_overdue": false,
+      "created_at": "2026-01-15T10:00:00Z",
+      "bra": {
+        "name": "Q1 2026 Assessment"
+      },
+      "risk_scenario": {
+        "name": "Cyberattack Risk"
+      }
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+---
+
+## Create Action
+
+### Endpoint
+
+```
+POST /api/v1/mitigation-actions
+```
+
+### Request Body
+
+```json
+{
+  "action": "Implement MFA for all administrative access",
+  "owner": "security@acme.com",
+  "priority": "high",
+  "action_type": "Technology",
+  "due_date": "2026-03-31",
+  "bra_id": "bra-uuid-001",
+  "bra_risk_scenario_id": "brs-uuid-001"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Action description |
+| `owner` | string | Yes | Responsible person/team |
+| `priority` | string | Yes | `low`, `medium`, `high`, `critical` |
+| `action_type` | string | Yes | Category of action |
+| `due_date` | date | Yes | Target completion date |
+| `bra_id` | UUID | No | Link to BRA |
+| `bra_risk_scenario_id` | UUID | No | Link to specific scenario |
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "ma-uuid-new",
+    "action": "Implement MFA for all administrative access",
+    "status": "created",
+    "created_at": "2026-01-16T10:00:00Z"
+  },
+  "message": "Mitigation action created successfully"
+}
+```
+
+---
+
+## Update Action
+
+### Endpoint
+
+```
+PATCH /api/v1/mitigation-actions/{action_id}
+```
+
+### Request Body
+
+```json
+{
+  "status": "in_progress",
+  "owner": "new-owner@acme.com",
+  "due_date": "2026-04-15"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "ma-uuid-001",
+    "status": "in_progress",
+    "owner": "new-owner@acme.com",
+    "due_date": "2026-04-15",
+    "updated_at": "2026-01-16T10:00:00Z"
+  },
+  "message": "Mitigation action updated successfully"
+}
+```
+
+---
+
+## Bulk Update
+
+### Endpoint
+
+```
+POST /api/v1/mitigation-actions/bulk-update
+```
+
+### Request Body
+
+```json
+{
+  "action_ids": ["ma-uuid-001", "ma-uuid-002", "ma-uuid-003"],
+  "updates": {
+    "status": "in_progress"
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "updated_count": 3,
+    "updated_ids": ["ma-uuid-001", "ma-uuid-002", "ma-uuid-003"]
+  },
+  "message": "3 actions updated successfully"
+}
+```
+
+---
+
+## Archive Action
+
+### Endpoint
+
+```
+POST /api/v1/mitigation-actions/{action_id}/archive
+```
+
+### Response
+
+```json
+{
+  "message": "Mitigation action archived successfully"
+}
+```

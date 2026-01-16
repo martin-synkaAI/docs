@@ -1,0 +1,291 @@
+---
+title: "Assessor Role"
+description: "Risk assessment creation and management"
+---
+
+## Overview
+
+Assessors are the primary users who create and conduct Business Risk Assessments. They identify risks, rate impact and likelihood, link controls, and prepare assessments for approval.
+
+## Key Responsibilities
+
+| Responsibility | Description |
+|---------------|-------------|
+| BRA Creation | Create new Business Risk Assessments |
+| Risk Assessment | Rate inherent and residual risks |
+| Control Linking | Link relevant controls to risk scenarios |
+| Control Assessment | Rate Test of Design and Test of Effectiveness |
+| Justification | Document rationale for all ratings |
+| Submission | Submit completed BRAs for approval |
+| Action Management | Create and manage mitigation actions |
+
+## Access Scope
+
+### Entity-Based Access
+
+Assessors are assigned to specific Legal Entities and/or Business Units:
+
+```
+Assessor: John Smith
+├── Assigned: ACME Bank Brasil S.A.
+│   ├── Retail Banking
+│   └── Digital Channels
+└── NOT Assigned: ACME Seguros Ltda.
+```
+
+<Info>
+Assessors can only see and work with data from their assigned entities. This ensures data segregation within large organizations.
+</Info>
+
+### Permissions
+
+| Feature | Permission |
+|---------|------------|
+| Dashboard | View (filtered to assigned entities) |
+| BRAs | Create, Edit, Submit |
+| Risk Scenarios | View, Include in BRAs |
+| Controls | View, Link to scenarios, Assess ToD/ToE |
+| Mitigation Actions | Create, Edit, Update status |
+| Risk Library | View only |
+| Governance | View only |
+| Users | No access |
+
+## Assessor Workflows
+
+### Creating a BRA
+
+<Steps>
+  <Step title="Initialize">
+    Navigate to **BRAs → Create New BRA**
+    - Select Legal Entity (from assigned entities)
+    - Select Business Unit
+    - Enter assessment period and details
+  </Step>
+  
+  <Step title="Select Scenarios">
+    Choose risk scenarios relevant to the assessment
+    - Browse by category
+    - Filter by product linkage
+    - Include/exclude as appropriate
+  </Step>
+  
+  <Step title="Rate Inherent Risk">
+    For each scenario, assess inherent risk:
+    - Rate Impact (1-5)
+    - Rate Likelihood (1-5)
+    - Provide justification
+  </Step>
+  
+  <Step title="Link Controls">
+    Associate controls with each scenario:
+    - Select Key Controls
+    - Select Sub-Controls
+    - System suggests linked controls
+  </Step>
+  
+  <Step title="Assess Controls">
+    For each linked control:
+    - Rate Test of Design (A-E)
+    - Rate Test of Effectiveness (1-5)
+    - Document evidence and testing details
+  </Step>
+  
+  <Step title="Rate Residual Risk">
+    After considering controls:
+    - Rate residual Impact (1-5)
+    - Rate residual Likelihood (1-5)
+    - Explain how controls mitigate risk
+  </Step>
+  
+  <Step title="Review and Submit">
+    Final review:
+    - Check all scenarios rated
+    - Verify control linkages
+    - Submit for approval
+  </Step>
+</Steps>
+
+### Conducting Risk Assessments
+
+#### Inherent Risk Rating
+
+Consider risk **before** any controls:
+
+| Question | Consideration |
+|----------|---------------|
+| What is the worst-case impact? | Financial loss, regulatory penalty, reputation damage |
+| How likely is this scenario? | Historical data, industry benchmarks, expert judgment |
+| What evidence supports this rating? | Past incidents, audit findings, external reports |
+
+**Documentation Requirements:**
+- Clear justification for both Impact and Likelihood
+- Reference to supporting evidence
+- Explanation of key assumptions
+
+#### Control Assessment
+
+For each linked control, assess effectiveness:
+
+**Test of Design (ToD):**
+- Is the control properly documented?
+- Does it address the risk adequately?
+- Is it integrated into processes?
+
+**Test of Effectiveness (ToE):**
+- How was the control tested?
+- What were the test results?
+- What exceptions were identified?
+
+<Tip>
+Document testing date, tester name, and evidence notes for audit purposes.
+</Tip>
+
+#### Residual Risk Rating
+
+After considering controls:
+
+| Scenario | Guidance |
+|----------|----------|
+| Controls highly effective | Residual should be significantly lower than inherent |
+| Controls moderately effective | Residual should be lower than inherent |
+| Controls ineffective | Residual may equal inherent risk |
+| No controls linked | Residual equals inherent risk |
+
+### Working with Action Plans
+
+Assessors can manage mitigation actions:
+
+#### Creating Actions
+
+From the BRA workspace or Action Plans page:
+1. Click **Create Action**
+2. Enter action details
+3. Assign owner and due date
+4. Set priority
+5. Link to BRA/scenario if applicable
+
+#### Updating Actions
+
+- Update status as work progresses
+- Modify due dates when needed
+- Add notes on progress
+- Close when complete
+
+<Note>
+Actions linked to approved BRAs remain active and should be tracked to completion.
+</Note>
+
+## Dashboard View
+
+Assessors see a filtered dashboard:
+
+### Visible Data
+- Risk metrics for assigned entities only
+- BRAs they created or can access
+- Actions they own or for their entities
+- Control effectiveness for their scope
+
+### Not Visible
+- Data from unassigned entities
+- Enterprise-wide aggregates
+- User management
+- Risk appetite configuration
+
+## Collaboration
+
+### Working with Client Admins
+
+- Client Admins approve submitted BRAs
+- May request changes with comments
+- Provide guidance on risk appetite
+- Can reassign entity access
+
+### Working with Reviewers
+
+- Reviewers can view your assessments
+- May provide feedback informally
+- Cannot modify your work
+- Can access audit trails
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Preparation">
+    Before starting a BRA:
+    - Gather relevant data and reports
+    - Review previous assessments
+    - Understand current control status
+    - Consult with business stakeholders
+  </Accordion>
+  
+  <Accordion title="Consistency">
+    Maintain rating consistency:
+    - Use organizational rating guidelines
+    - Reference calibration examples
+    - Apply same criteria across scenarios
+    - Document assumptions clearly
+  </Accordion>
+  
+  <Accordion title="Evidence">
+    Support ratings with evidence:
+    - Reference specific documents
+    - Cite incident data
+    - Include testing results
+    - Maintain audit trail
+  </Accordion>
+  
+  <Accordion title="Timeliness">
+    Complete assessments on schedule:
+    - Start early in the period
+    - Track progress regularly
+    - Submit before deadlines
+    - Respond promptly to feedback
+  </Accordion>
+</AccordionGroup>
+
+## Common Scenarios
+
+### BRA Returned for Changes
+
+If Client Admin requests changes:
+
+1. Review feedback comments
+2. Navigate to the BRA
+3. Make requested updates
+4. Re-submit for approval
+5. Address any follow-up comments
+
+### Mid-Assessment Changes
+
+If business circumstances change during assessment:
+
+1. Update risk ratings as appropriate
+2. Document the change in justification
+3. Consider adding relevant scenarios
+4. Update control assessments if needed
+
+### Creating Follow-Up Actions
+
+When risks exceed appetite:
+
+1. Create mitigation actions
+2. Link to specific risk scenario
+3. Set appropriate priority
+4. Assign realistic due dates
+5. Track progress to completion
+
+## API Access
+
+Assessors can access the following APIs:
+
+| Endpoint | Permission |
+|----------|------------|
+| `/api/v1/bras` | Create, Read, Update (own/assigned) |
+| `/api/v1/bras/{id}/scenarios` | Full access (own BRAs) |
+| `/api/v1/bras/{id}/ratings` | Full access (own BRAs) |
+| `/api/v1/bras/{id}/controls` | Full access (own BRAs) |
+| `/api/v1/mitigation-actions` | Full access (assigned entities) |
+| `/api/v1/controls/sub-controls` | Read + Update ToD/ToE |
+| `/api/v1/dashboard/metrics` | Read (filtered) |
+
+See [API Reference](/api-reference/introduction) for complete documentation.

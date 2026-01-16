@@ -1,0 +1,299 @@
+---
+title: 'Cron Jobs'
+description: 'Scheduled tasks and background jobs'
+---
+
+## Overview
+
+Risk Legion uses scheduled tasks for maintenance, cleanup, and automated processes. These can be configured via system cron, Docker, or external schedulers.
+
+## Scheduled Tasks
+
+### Daily Tasks
+
+| Task | Schedule | Description |
+|------|----------|-------------|
+| Overdue Action Check | 00:00 UTC | Flag actions past due date |
+| Metric Aggregation | 01:00 UTC | Pre-compute dashboard metrics |
+| Log Rotation | 02:00 UTC | Archive old log files |
+
+### Weekly Tasks
+
+| Task | Schedule | Description |
+|------|----------|-------------|
+| Inactive User Report | Sunday 00:00 | Report users with no recent activity |
+| Database Maintenance | Sunday 03:00 | VACUUM ANALYZE |
+| Backup Verification | Sunday 04:00 | Verify backup integrity |
+
+### Monthly Tasks
+
+| Task | Schedule | Description |
+|------|----------|-------------|
+| Audit Log Archive | 1st 00:00 | Archive old audit logs |
+| Usage Report | 1st 01:00 | Generate usage statistics |
+
+## Implementation
+
+### System Cron (EC2)
+
+```bash
+# Edit crontab
+crontab -e
+
+# Daily tasks
+0 0 * * * /opt/risk-legion/scripts/check_overdue_actions.sh
+0 1 * * * /opt/risk-legion/scripts/aggregate_metrics.sh
+0 2 * * * /opt/risk-legion/scripts/rotate_logs.sh
+
+# Weekly tasks
+0 0 * * 0 /opt/risk-legion/scripts/inactive_users_report.sh
+0 3 * * 0 /opt/risk-legion/scripts/db_maintenance.sh
+
+# Monthly tasks
+0 0 1 * * /opt/risk-legion/scripts/archive_audit_logs.sh
+```
+
+### Docker-Based Cron
+
+```dockerfile
+# Dockerfile.cron
+FROM python:3.11-slim
+
+COPY scripts /app/scripts
+COPY requirements.txt /app/
+
+RUN pip install -r /app/requirements.txt
+
+# Install cron
+RUN apt-get update && apt-get install -y cron
+
+# Copy crontab
+COPY crontab /etc/cron.d/risk-legion-cron
+RUN chmod 0644 /etc/cron.d/risk-legion-cron
+RUN crontab /etc/cron.d/risk-legion-cron
+
+CMD ["cron", "-f"]
+```
+
+### Using APScheduler
+
+```python
+# app/scheduler.py
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+
+scheduler = AsyncIOScheduler()
+
+@scheduler.scheduled_job(CronTrigger(hour=0, minute=0))
+async def check_overdue_actions():
+    """Flag actions past due date"""
+    result = await db.execute("""
+        UPDATE mitigation_actions
+        SET is_overdue = TRUE
+        WHERE due_date < CURRENT_DATE
+        AND status != 'completed'
+        AND is_overdue = FALSE
+    """)
+    logger.info(f"Marked {result.rowcount} actions as overdue")
+
+@scheduler.scheduled_job(CronTrigger(hour=1, minute=0))
+async def aggregate_metrics():
+    """Pre-compute dashboard metrics"""
+    # Compute and cache metrics
+    pass
+
+# Start scheduler
+scheduler.start()
+```
+
+## Task Scripts
+
+### Check Overdue Actions
+
+```python
+# scripts/check_overdue_actions.py
+import asyncio
+from datetime import date
+from app.database import get_db
+
+async def main():
+    db = await get_db()
+    
+    result = await db.execute("""
+        UPDATE mitigation_actions
+        SET is_overdue = TRUE, updated_at = NOW()
+        WHERE due_date < $1
+        AND status IN ('created', 'in_progress')
+        AND (is_overdue = FALSE OR is_overdue IS NULL)
+        RETURNING id
+    """, date.today())
+    
+    overdue_ids = [r['id'] for r in result]
+    
+    if overdue_ids:
+        print(f"Marked {len(overdue_ids)} actions as overdue")
+        
+        # Optional: Send notifications
+        # await send_overdue_notifications(overdue_ids)
+    else:
+        print("No new overdue actions")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Database Maintenance
+
+```bash
+#!/bin/bash
+# scripts/db_maintenance.sh
+
+# Run VACUUM ANALYZE on key tables
+psql $DATABASE_URL <<EOF
+VACUUM ANALYZE business_risk_assessments;
+VACUUM ANALYZE bra_risk_scenarios;
+VACUUM ANALYZE bra_risk_ratings;
+VACUUM ANALYZE mitigation_actions;
+VACUUM ANALYZE audit_log;
+EOF
+
+echo "Database maintenance completed at $(date)"
+```
+
+### Archive Audit Logs
+
+```python
+# scripts/archive_audit_logs.py
+import asyncio
+from datetime import datetime, timedelta
+from app.database import get_db
+
+async def main():
+    db = await get_db()
+    
+    # Archive logs older than 1 year to separate table
+    archive_date = datetime.now() - timedelta(days=365)
+    
+    result = await db.execute("""
+        WITH archived AS (
+            DELETE FROM audit_log
+            WHERE created_at < $1
+            RETURNING *
+        )
+        INSERT INTO audit_log_archive
+        SELECT * FROM archived
+    """, archive_date)
+    
+    print(f"Archived {result.rowcount} audit log entries")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## External Schedulers
+
+### AWS EventBridge
+
+For serverless scheduling:
+
+```json
+{
+  "ScheduleExpression": "cron(0 0 * * ? *)",
+  "Target": {
+    "Arn": "arn:aws:lambda:region:account:function:check-overdue-actions",
+    "Id": "check-overdue-actions"
+  }
+}
+```
+
+### GitHub Actions Scheduled Workflow
+
+```yaml
+# .github/workflows/scheduled-tasks.yml
+name: Scheduled Tasks
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+
+jobs:
+  check-overdue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run overdue check
+        run: |
+          curl -X POST https://api.risklegion.com/api/v1/admin/tasks/check-overdue \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_TOKEN }}"
+```
+
+## Monitoring Cron Jobs
+
+### Logging
+
+```python
+import logging
+from datetime import datetime
+
+logging.basicConfig(
+    filename='/var/log/risk-legion/cron.log',
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+
+logger = logging.getLogger('cron')
+
+def log_job_start(job_name):
+    logger.info(f"Starting job: {job_name}")
+
+def log_job_complete(job_name, duration):
+    logger.info(f"Completed job: {job_name} in {duration:.2f}s")
+
+def log_job_error(job_name, error):
+    logger.error(f"Failed job: {job_name} - {error}")
+```
+
+### Health Checks
+
+Use [Cronitor](https://cronitor.io) or [Healthchecks.io](https://healthchecks.io):
+
+```bash
+#!/bin/bash
+# Ping on start
+curl -fsS -m 10 --retry 5 https://hc-ping.com/your-uuid/start
+
+# Run job
+python scripts/check_overdue_actions.py
+
+# Ping on success (or /fail on error)
+curl -fsS -m 10 --retry 5 https://hc-ping.com/your-uuid
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Idempotency">
+    - Jobs should be safe to run multiple times
+    - Use database transactions
+    - Check for already-processed items
+  </Accordion>
+  
+  <Accordion title="Error Handling">
+    - Catch and log exceptions
+    - Send alerts on failures
+    - Implement retry logic
+  </Accordion>
+  
+  <Accordion title="Monitoring">
+    - Log job start and completion
+    - Track job duration
+    - Alert on job failures
+    - Use dead man's switch monitors
+  </Accordion>
+  
+  <Accordion title="Resource Management">
+    - Run heavy jobs during off-peak hours
+    - Batch large operations
+    - Set appropriate timeouts
+  </Accordion>
+</AccordionGroup>

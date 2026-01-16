@@ -1,0 +1,157 @@
+---
+title: 'Risk Appetite'
+description: 'Configure risk appetite thresholds'
+---
+
+## Get Risk Appetite
+
+### Endpoint
+
+```
+GET /api/v1/governance/risk-appetite
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `legal_entity_id` | UUID | Get appetite for specific entity |
+| `business_unit_id` | UUID | Get appetite for specific business unit |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "ra-uuid-001",
+      "risk_level": "Medium",
+      "threshold_value": 9,
+      "description": "Enterprise default risk appetite",
+      "legal_entity_id": null,
+      "business_unit_id": null,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-12-15T00:00:00Z",
+      "updated_by": "admin-uuid"
+    },
+    {
+      "id": "ra-uuid-002",
+      "risk_level": "Low",
+      "threshold_value": 4,
+      "description": "Lower appetite for compliance-sensitive entity",
+      "legal_entity_id": "le-uuid-002",
+      "business_unit_id": null,
+      "created_at": "2025-06-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## Set Risk Appetite
+
+### Endpoint
+
+```
+POST /api/v1/governance/risk-appetite
+```
+
+### Required Role
+
+- Client Admin
+
+### Request Body
+
+```json
+{
+  "risk_level": "Medium",
+  "threshold_value": 9,
+  "description": "Updated enterprise risk appetite per Board resolution",
+  "legal_entity_id": null,
+  "business_unit_id": null
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `risk_level` | string | Yes | Low, Medium, High, Very High |
+| `threshold_value` | integer | Yes | Maximum acceptable risk score (1-25) |
+| `description` | string | No | Rationale for appetite setting |
+| `legal_entity_id` | UUID | No | Entity override (null = enterprise) |
+| `business_unit_id` | UUID | No | BU override (null = entity/enterprise) |
+
+<Note>
+This is an **upsert** operation. If an appetite already exists for the scope, it will be updated.
+</Note>
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "ra-uuid-001",
+    "risk_level": "Medium",
+    "threshold_value": 9,
+    "description": "Updated enterprise risk appetite",
+    "updated_at": "2026-01-16T10:00:00Z"
+  },
+  "message": "Risk appetite configured successfully"
+}
+```
+
+---
+
+## Delete Entity Override
+
+### Endpoint
+
+```
+DELETE /api/v1/governance/risk-appetite/{risk_appetite_id}
+```
+
+### Required Role
+
+- Client Admin
+
+### Response
+
+```json
+{
+  "message": "Risk appetite override removed"
+}
+```
+
+<Note>
+Only entity-level overrides can be deleted. Enterprise default cannot be deleted, only updated.
+</Note>
+
+---
+
+## Risk Appetite History
+
+### Endpoint
+
+```
+GET /api/v1/governance/risk-appetite/history
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "rah-uuid-001",
+      "risk_appetite_id": "ra-uuid-001",
+      "previous_level": "Low",
+      "new_level": "Medium",
+      "previous_threshold": 4,
+      "new_threshold": 9,
+      "changed_by": "admin-uuid",
+      "changed_at": "2026-01-15T14:00:00Z",
+      "reason": "Board decision to accept higher risk for growth"
+    }
+  ]
+}
+```

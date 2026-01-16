@@ -1,0 +1,272 @@
+---
+title: "Client Admin Role"
+description: "Enterprise-level management and configuration"
+---
+
+## Overview
+
+Client Admins are enterprise-level administrators who manage all aspects of their organization's Risk Legion instance. They have full access within their enterprise, including user management, configuration, and BRA approval.
+
+## Key Responsibilities
+
+| Responsibility | Description |
+|---------------|-------------|
+| User Management | Create and manage Assessors and Reviewers |
+| Organization Setup | Configure Legal Entities and Business Units |
+| Risk Library | Manage Products, Scenarios, Controls, Triggers |
+| Risk Appetite | Define and update risk appetite thresholds |
+| BRA Approval | Review and approve submitted BRAs |
+| Audit Review | Access and review audit logs |
+
+## Permissions Matrix
+
+| Feature | Client Admin | Assessor | Reviewer |
+|---------|:------------:|:--------:|:--------:|
+| View Dashboard | ✅ | ✅ | ✅ |
+| Create BRA | ✅ | ✅ | ❌ |
+| Edit BRA | ✅ | ✅ | ❌ |
+| Approve BRA | ✅ | ❌ | ❌ |
+| Cancel BRA | ✅ | ❌ | ❌ |
+| Manage Risk Library | ✅ | ❌ | ❌ |
+| Configure Risk Appetite | ✅ | ❌ | ❌ |
+| Manage Organization | ✅ | ❌ | ❌ |
+| Manage Users | ✅ | ❌ | ❌ |
+| View Audit Logs | ✅ | ❌ | ✅ |
+| Create Actions | ✅ | ✅ | ❌ |
+| Manage Actions | ✅ | ✅ | ❌ |
+
+## Client Admin Workflows
+
+### User Management
+
+#### Creating Users
+
+1. Navigate to **Settings → Users**
+2. Click **Add User**
+3. Enter user details:
+   - Email address
+   - Full name
+   - Role (Assessor or Reviewer)
+4. Assign entity access (for Assessors/Reviewers)
+5. Click **Create User**
+
+<Info>
+New users receive an email invitation to set up their account. They must complete registration before accessing the platform.
+</Info>
+
+#### Assigning Entity Access
+
+Assessors and Reviewers need entity assignments:
+
+1. Go to **Settings → Users → [User Name]**
+2. Click **Manage Assignments**
+3. Select Legal Entities and/or Business Units
+4. Click **Save**
+
+<Note>
+Users can only see data for their assigned entities. Client Admins see all entities.
+</Note>
+
+#### Deactivating Users
+
+1. Go to **Settings → Users**
+2. Find the user
+3. Click **Deactivate**
+4. Confirm the action
+
+Deactivated users:
+- Cannot log in
+- Retain historical assignments
+- Can be reactivated later
+- Historical audit entries preserved
+
+### Organization Setup
+
+#### Legal Entities
+
+Legal Entities represent your organizational structure:
+
+1. Navigate to **Governance → Organisation Structure**
+2. Click **Add Legal Entity**
+3. Enter details:
+   - Name
+   - Legal Name
+   - Entity Type (Bank, Insurance, Investment Firm, etc.)
+   - Country of Incorporation
+   - Registration Number
+   - Parent Entity (for subsidiaries)
+4. Click **Create**
+
+**Hierarchy Example:**
+```
+ACME Bank Brasil S.A. (Parent)
+├── ACME Seguros Ltda. (Insurance Subsidiary)
+└── ACME Investimentos DTVM (Investment Subsidiary)
+```
+
+#### Business Units
+
+Business Units are operational divisions within Legal Entities:
+
+1. Navigate to **Governance → Organisation Structure → Business Units**
+2. Click **Add Business Unit**
+3. Select parent Legal Entity
+4. Enter Business Unit name and description
+5. Click **Create**
+
+### Risk Library Management
+
+#### Products
+
+Products drive risk scenario relevance:
+
+1. Go to **Governance → Risk Library → Products**
+2. Click **Add Product**
+3. Enter:
+   - Product Name
+   - Category
+   - Description
+   - Customer Types
+   - Geographic Operations
+   - Distribution Channels
+   - Transaction Types
+4. Click **Create**
+
+<Tip>
+Link products to Legal Entities/Business Units to determine which risk scenarios appear during BRA creation.
+</Tip>
+
+#### Risk Scenarios
+
+Configure your risk scenario library:
+
+1. Go to **Governance → Risk Library → Risk Scenarios**
+2. Click **Add Scenario**
+3. Enter:
+   - Name
+   - Category (Credit, Operational, Compliance, etc.)
+   - Description
+   - Risk Group (optional)
+4. Link to relevant Products
+5. Link suggested Controls
+6. Link Risk Triggers
+7. Click **Create**
+
+#### Key Controls and Sub-Controls
+
+Build your control library:
+
+1. Go to **Governance → Risk Library → Key Controls**
+2. Click **Add Key Control**
+3. Enter control details
+4. Add Sub-Controls under the Key Control
+5. Link controls to relevant Risk Scenarios
+
+### Risk Appetite Configuration
+
+1. Navigate to **Governance → Risk Appetite**
+2. Set enterprise-wide default:
+   - Select maximum acceptable risk level
+   - Add description/rationale
+3. Optionally add entity-level overrides
+4. Review history of changes
+
+See [Risk Appetite Framework](/guides/risk-appetite) for detailed guidance.
+
+### BRA Approval
+
+Client Admins approve submitted BRAs:
+
+1. Navigate to **BRAs → Pending Approval**
+2. Click on a BRA to review
+3. Review:
+   - Risk scenario assessments
+   - Control linkages
+   - Risk ratings and justifications
+   - Mitigation recommendations
+4. Either:
+   - **Approve** - Creates immutable snapshot
+   - **Request Changes** - Returns to Assessor with comments
+
+<Warning>
+Approved BRAs become immutable. Ensure thorough review before approval.
+</Warning>
+
+### Audit Log Review
+
+Access comprehensive audit trails:
+
+1. Navigate to **Settings → Audit Logs**
+2. Filter by:
+   - User
+   - Action Type
+   - Entity Type
+   - Date Range
+3. Export logs as needed
+
+## Dashboard Access
+
+Client Admins see the full enterprise dashboard:
+
+### Visible Metrics
+- Total risks across all entities
+- Risks above appetite (enterprise-wide)
+- Control effectiveness summary
+- Overdue actions count
+- Risk heat maps
+- Trend indicators
+
+### Filtering
+- Filter by any Legal Entity
+- Filter by any Business Unit
+- Date range filtering
+- All data accessible
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="User Management">
+    - Review user access quarterly
+    - Remove access promptly when roles change
+    - Use specific entity assignments
+    - Document user responsibilities
+  </Accordion>
+  
+  <Accordion title="Organization Setup">
+    - Mirror legal structure accurately
+    - Keep business units aligned with operations
+    - Update when organizational changes occur
+    - Archive rather than delete
+  </Accordion>
+  
+  <Accordion title="Risk Library">
+    - Start with core scenarios and controls
+    - Expand based on business needs
+    - Review annually for relevance
+    - Link all relationships properly
+  </Accordion>
+  
+  <Accordion title="BRA Approval">
+    - Review all scenarios thoroughly
+    - Verify justifications are adequate
+    - Check control linkages make sense
+    - Ensure risk appetite is applied correctly
+  </Accordion>
+</AccordionGroup>
+
+## API Access
+
+Client Admins can access all enterprise-level APIs:
+
+| API Group | Access Level |
+|-----------|--------------|
+| BRAs | Full CRUD + Approve/Cancel |
+| Governance | Full CRUD |
+| Risk Library | Full CRUD |
+| Controls | Full CRUD |
+| Mitigation Actions | Full CRUD |
+| Dashboard | Full Read |
+| Users | Read + Create (Assessor/Reviewer) |
+| Audit Logs | Read |
+
+See [API Reference](/api-reference/introduction) for complete documentation.

@@ -1,0 +1,94 @@
+---
+title: 'Control Effectiveness'
+description: 'Get control effectiveness summary and heat map'
+---
+
+## Effectiveness Summary
+
+### Endpoint
+
+```
+GET /api/v1/controls/effectiveness
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `legal_entity_id` | UUID | Filter by Legal Entity |
+| `business_unit_id` | UUID | Filter by Business Unit |
+
+### Response
+
+```json
+{
+  "data": {
+    "highly_effective": 25,
+    "effective": 40,
+    "moderately_effective": 20,
+    "less_effective": 10,
+    "not_effective": 5,
+    "not_assessed": 15,
+    "total": 115
+  },
+  "message": "Control effectiveness retrieved successfully"
+}
+```
+
+---
+
+## Control Heat Map
+
+### Endpoint
+
+```
+GET /api/v1/controls/heat-map
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `legal_entity_id` | UUID | Filter by Legal Entity |
+| `business_unit_id` | UUID | Filter by Business Unit |
+
+### Response
+
+```json
+{
+  "data": {
+    "tod_levels": ["A", "B", "C", "D", "E"],
+    "toe_levels": ["1", "2", "3", "4", "5"],
+    "data": {
+      "A": {
+        "1": { "count": 10, "effectiveness": "Highly Effective" },
+        "2": { "count": 8, "effectiveness": "Highly Effective" },
+        "3": { "count": 3, "effectiveness": "Effective" },
+        "4": { "count": 1, "effectiveness": "Moderately Effective" },
+        "5": { "count": 0, "effectiveness": "Less Effective" }
+      },
+      "B": {
+        "1": { "count": 5, "effectiveness": "Highly Effective" },
+        "2": { "count": 15, "effectiveness": "Effective" },
+        "3": { "count": 10, "effectiveness": "Effective" },
+        "4": { "count": 2, "effectiveness": "Moderately Effective" },
+        "5": { "count": 1, "effectiveness": "Less Effective" }
+      }
+    },
+    "total_assessed": 100
+  },
+  "message": "Heat map data retrieved successfully"
+}
+```
+
+### Example Usage
+
+```bash
+# Get enterprise-wide heat map
+curl -X GET "https://api.risklegion.com/api/v1/controls/heat-map" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Get heat map for specific entity
+curl -X GET "https://api.risklegion.com/api/v1/controls/heat-map?legal_entity_id=le-uuid-001" \
+  -H "Authorization: Bearer $TOKEN"
+```

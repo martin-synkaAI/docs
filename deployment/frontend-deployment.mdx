@@ -1,0 +1,210 @@
+---
+title: 'Frontend Deployment'
+description: 'Deploy the Risk Legion frontend to Vercel'
+---
+
+## Overview
+
+The Risk Legion frontend is deployed to Vercel for optimal performance with global CDN distribution, automatic HTTPS, and preview deployments.
+
+## Vercel Setup
+
+### 1. Connect Repository
+
+1. Go to [vercel.com](https://vercel.com)
+2. Click "Add New Project"
+3. Import your GitHub repository
+4. Select the `risk-legion-frontend` directory as root
+
+### 2. Configure Build Settings
+
+| Setting | Value |
+|---------|-------|
+| Framework Preset | Vite |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Install Command | `npm install` |
+
+### 3. Environment Variables
+
+Add these in Vercel Dashboard → Settings → Environment Variables:
+
+| Variable | Production Value | Preview Value |
+|----------|------------------|---------------|
+| `VITE_SUPABASE_URL` | `https://your-project.supabase.co` | Same |
+| `VITE_SUPABASE_ANON_KEY` | Production anon key | Same |
+| `VITE_API_URL` | `https://api.risklegion.com` | `https://api-test.risklegion.com` |
+
+### 4. Domain Configuration
+
+1. Go to Settings → Domains
+2. Add `app.risklegion.com`
+3. Configure DNS:
+   ```
+   CNAME app cname.vercel-dns.com
+   ```
+
+## Deployment Process
+
+### Automatic Deployments
+
+Vercel automatically deploys on:
+- Push to `main` branch → Production
+- Push to other branches → Preview deployment
+- Pull requests → Preview deployment
+
+### Manual Deployment
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy to preview
+vercel
+
+# Deploy to production
+vercel --prod
+```
+
+## vercel.json Configuration
+
+```json
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Build Optimization
+
+### Vite Configuration
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          charts: ['recharts'],
+          grid: ['ag-grid-react', 'ag-grid-community']
+        }
+      }
+    }
+  }
+});
+```
+
+### Performance Optimizations
+
+- **Code Splitting:** Automatic route-based splitting
+- **Tree Shaking:** Removes unused code
+- **Minification:** Terser for production builds
+- **Asset Optimization:** Vite optimizes assets
+
+## Preview Deployments
+
+Every pull request gets a unique preview URL:
+
+```
+https://risk-legion-frontend-<hash>-<team>.vercel.app
+```
+
+### Preview Comments
+
+Enable preview comments on PRs:
+1. Go to Settings → Git
+2. Enable "Vercel for GitHub"
+
+## Monitoring
+
+### Vercel Analytics
+
+Enable in Dashboard → Analytics:
+- Page views
+- Web vitals (LCP, FID, CLS)
+- Geographic distribution
+
+### Error Tracking
+
+Integrate with Sentry:
+
+```typescript
+// src/main.tsx
+import * as Sentry from '@sentry/react';
+
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.VITE_ENVIRONMENT
+});
+```
+
+## Rollback
+
+### Via Dashboard
+
+1. Go to Deployments
+2. Find the deployment to restore
+3. Click "..." → "Promote to Production"
+
+### Via CLI
+
+```bash
+vercel rollback
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Build Fails">
+    - Check build logs in Vercel Dashboard
+    - Verify all environment variables are set
+    - Ensure dependencies are in package.json
+    - Test build locally: `npm run build`
+  </Accordion>
+  
+  <Accordion title="Routing Issues">
+    - Ensure vercel.json has SPA rewrites
+    - Check for hardcoded paths
+    - Verify React Router configuration
+  </Accordion>
+  
+  <Accordion title="Environment Variables Not Working">
+    - Variables must start with `VITE_`
+    - Redeploy after adding variables
+    - Check for typos in variable names
+  </Accordion>
+  
+  <Accordion title="Slow Performance">
+    - Enable code splitting
+    - Optimize images
+    - Use lazy loading for routes
+    - Check bundle size with `npm run analyze`
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,93 @@
+---
+title: 'System Health'
+description: 'Monitor system health and status'
+---
+
+## Health Check
+
+### Endpoint
+
+```
+GET /health
+```
+
+### Authentication
+
+Not required
+
+### Response
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-01-16T10:30:00Z",
+  "version": "1.0.0",
+  "components": {
+    "api": "healthy",
+    "database": "healthy",
+    "redis": "healthy"
+  },
+  "uptime_seconds": 86400
+}
+```
+
+### Status Values
+
+| Status | Description |
+|--------|-------------|
+| `healthy` | All systems operational |
+| `degraded` | Some components impaired but functional |
+| `unhealthy` | Critical components failing |
+
+---
+
+## Platform Health (Admin)
+
+### Endpoint
+
+```
+GET /api/v1/admin/health
+```
+
+### Required Role
+
+- Super Admin
+
+### Response
+
+```json
+{
+  "data": {
+    "system": {
+      "status": "healthy",
+      "uptime_seconds": 86400,
+      "version": "1.0.0"
+    },
+    "database": {
+      "status": "healthy",
+      "latency_ms": 12,
+      "connections": {
+        "active": 5,
+        "idle": 15,
+        "max": 20
+      }
+    },
+    "redis": {
+      "status": "healthy",
+      "latency_ms": 2,
+      "memory_used_mb": 45,
+      "memory_max_mb": 256
+    },
+    "enterprises": {
+      "total": 25,
+      "active": 23,
+      "inactive": 2
+    },
+    "metrics": {
+      "requests_per_minute": 150,
+      "error_rate_percent": 0.5,
+      "avg_response_ms": 85
+    }
+  }
+}
+```

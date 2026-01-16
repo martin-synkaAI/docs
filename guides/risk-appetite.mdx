@@ -1,0 +1,258 @@
+---
+title: "Risk Appetite Framework"
+description: "Defining and managing organizational risk tolerance in Risk Legion"
+---
+
+## Overview
+
+Risk Appetite defines the level and types of risk an organization is willing to accept in pursuit of its objectives. Risk Legion enables you to configure risk appetite at multiple levels and automatically flags risks that exceed your defined tolerance.
+
+## Understanding Risk Appetite
+
+### Key Definitions
+
+| Term | Definition |
+|------|------------|
+| **Risk Appetite** | The amount of risk an organization is willing to accept to achieve its strategic objectives |
+| **Risk Tolerance** | The acceptable level of variation around risk appetite |
+| **Risk Capacity** | The maximum amount of risk an organization can absorb |
+| **Risk Threshold** | The specific level at which risks require escalation |
+
+### Risk Appetite vs. Risk Tolerance
+
+```
+Risk Capacity (Maximum)
+        ↑
+        │  ⚠️ Breach Zone
+        │
+Risk Appetite Threshold
+        │  ✅ Acceptable Zone
+        │
+        ↓
+Zero Risk (Theoretical)
+```
+
+## Risk Levels in Risk Legion
+
+Risk Legion uses a 5×5 risk matrix with four risk levels:
+
+| Level | Score Range | Description |
+|-------|-------------|-------------|
+| **Low** | 1-4 | Acceptable risk, routine monitoring |
+| **Medium** | 5-9 | Elevated risk, enhanced monitoring |
+| **High** | 10-15 | Significant risk, active management |
+| **Very High** | 16-25 | Critical risk, immediate action required |
+
+### Risk Score Calculation
+
+```
+Risk Score = Impact (1-5) × Likelihood (1-5)
+```
+
+**Impact Scale:**
+| Score | Level | Description |
+|-------|-------|-------------|
+| 1 | Insignificant | Minimal financial loss, no regulatory impact |
+| 2 | Minor | Small financial loss, minor regulatory attention |
+| 3 | Moderate | Moderate financial loss, regulatory review |
+| 4 | Major | Significant financial loss, regulatory action |
+| 5 | Catastrophic | Severe financial loss, license threat |
+
+**Likelihood Scale:**
+| Score | Level | Description |
+|-------|-------|-------------|
+| 1 | Rare | May occur only in exceptional circumstances |
+| 2 | Unlikely | Not expected but possible |
+| 3 | Possible | Might occur at some time |
+| 4 | Likely | Will probably occur |
+| 5 | Almost Certain | Expected to occur frequently |
+
+## Configuring Risk Appetite
+
+### Enterprise-Level Configuration
+
+Set the default risk appetite for your entire organization:
+
+1. Navigate to **Governance → Risk Appetite**
+2. Click **Configure Enterprise Appetite**
+3. Select the maximum acceptable risk level
+4. Add description/rationale
+5. Click **Save**
+
+```json
+{
+  "risk_level": "Medium",
+  "threshold_value": 9,
+  "description": "Enterprise accepts Medium risk (score ≤9) as maximum tolerance"
+}
+```
+
+### Entity-Level Configuration
+
+Override the enterprise default for specific Legal Entities:
+
+1. Navigate to **Governance → Risk Appetite**
+2. Click **Add Entity Override**
+3. Select the Legal Entity
+4. Set the risk level for that entity
+5. Click **Save**
+
+<Info>
+Entity-level settings override the enterprise default. This allows for different risk profiles across your organization.
+</Info>
+
+### Hierarchical Resolution
+
+Risk Legion resolves risk appetite using hierarchy:
+
+```
+1. Business Unit Level (if configured)
+   ↓
+2. Legal Entity Level (if configured)
+   ↓
+3. Enterprise Level (default)
+```
+
+<Note>
+Business Unit level risk appetite is planned for a future release. Currently, the hierarchy resolves from Legal Entity to Enterprise.
+</Note>
+
+## Risks Above Appetite
+
+### Automatic Detection
+
+Risk Legion automatically identifies risks that exceed appetite:
+
+1. During BRA assessment, residual risk is calculated
+2. System compares residual risk score to applicable appetite threshold
+3. Risks above threshold are flagged as "Above Appetite"
+
+### Dashboard Visibility
+
+The dashboard prominently displays:
+
+- **"Within Appetite" Hero Card** - Percentage of risks within tolerance
+- **Risks Above Appetite Count** - Number of scenarios exceeding appetite
+- **Risk Distribution Chart** - Visual breakdown by risk level
+
+### Automatic Mitigation Actions
+
+When a risk exceeds appetite:
+
+1. System can automatically create mitigation actions
+2. Actions are linked to the specific risk scenario
+3. Default priority is set based on risk level
+4. Actions appear in the Action Plans module
+
+## Risk Appetite History
+
+Risk Legion maintains a complete history of risk appetite changes:
+
+### Viewing History
+
+1. Navigate to **Governance → Risk Appetite**
+2. Click **View History**
+3. See all changes with:
+   - Previous value
+   - New value
+   - Changed by
+   - Changed at
+   - Reason (if provided)
+
+### Audit Compliance
+
+All risk appetite changes are:
+- Logged in the audit trail
+- Immutable once recorded
+- Available for compliance reporting
+- Retained per data retention policy
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Board-Level Approval">
+    Risk appetite should be:
+    - Approved by the Board or Risk Committee
+    - Documented in formal risk appetite statement
+    - Reviewed annually or after significant changes
+    - Communicated across the organization
+  </Accordion>
+  
+  <Accordion title="Align with Strategy">
+    Risk appetite should reflect:
+    - Strategic objectives
+    - Regulatory requirements
+    - Stakeholder expectations
+    - Industry benchmarks
+  </Accordion>
+  
+  <Accordion title="Differentiate by Category">
+    Consider different appetites for:
+    - Compliance risks (typically low appetite)
+    - Operational risks (varies by business)
+    - Strategic risks (may accept higher levels)
+    - Reputational risks (typically very low)
+  </Accordion>
+  
+  <Accordion title="Regular Review">
+    Review and update risk appetite:
+    - After significant incidents
+    - When strategy changes
+    - Following regulatory changes
+    - At least annually
+  </Accordion>
+</AccordionGroup>
+
+## Regulatory Considerations
+
+### Basel Framework
+
+Under Basel III/IV, banks must:
+- Define risk appetite aligned with business strategy
+- Integrate risk appetite into risk management framework
+- Report on risks exceeding appetite
+- Demonstrate Board oversight of risk appetite
+
+### BACEN Requirements (Brazil)
+
+Brazilian financial institutions must:
+- Maintain documented risk appetite statement
+- Review appetite annually
+- Report appetite breaches to management
+- Include in ICAAP/ILAAP documentation
+
+## API Reference
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/governance/risk-appetite` | GET | Get current risk appetite configuration |
+| `/api/v1/governance/risk-appetite` | POST | Create/update risk appetite (upsert) |
+| `/api/v1/governance/risk-appetite/{id}` | DELETE | Remove entity-level override |
+| `/api/v1/governance/risk-appetite/history` | GET | Get risk appetite change history |
+
+### Example: Set Enterprise Risk Appetite
+
+```bash
+curl -X POST /api/v1/governance/risk-appetite \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "risk_level": "Medium",
+    "threshold_value": 9,
+    "description": "Enterprise risk appetite set to Medium per Board resolution 2026-01"
+  }'
+```
+
+### Example: Set Entity Override
+
+```bash
+curl -X POST /api/v1/governance/risk-appetite \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "risk_level": "Low",
+    "threshold_value": 4,
+    "legal_entity_id": "le-001",
+    "description": "Lower appetite for insurance subsidiary per regulatory requirement"
+  }'
+```
+
+See [API Reference](/api-reference/introduction) for complete documentation.

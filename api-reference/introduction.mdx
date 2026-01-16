@@ -1,33 +1,298 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'API Introduction'
+description: 'Risk Legion RESTful API documentation'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Overview
 
-## Welcome
+The Risk Legion API is a RESTful API built with FastAPI, providing comprehensive access to all platform features including BRA management, control assurance, governance, and administration.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Base URLs
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+| Environment | Base URL |
+|-------------|----------|
+| **Production** | `https://api.risklegion.com` |
+| **Staging** | `https://api-test.risklegion.com` |
+| **Local Development** | `http://localhost:8000` |
+
+All API endpoints are prefixed with `/api/v1`.
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints (except `/health`) require authentication using JWT Bearer tokens.
+
+```bash
+curl -X GET "https://api.risklegion.com/api/v1/bras" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+See [Authentication](/api-reference/authentication) for details on obtaining and using tokens.
+
+## Response Format
+
+### Success Responses
+
+All successful responses follow this structure:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "data": { ... },
+  "message": "Operation successful"
+}
 ```
+
+### Paginated Responses
+
+List endpoints return paginated data:
+
+```json
+{
+  "data": [ ... ],
+  "message": "Items retrieved successfully",
+  "pagination": {
+    "page": 1,
+    "page_size": 25,
+    "total": 150,
+    "total_pages": 6,
+    "has_next": true,
+    "has_prev": false
+  }
+}
+```
+
+### Error Responses
+
+Error responses include:
+
+```json
+{
+  "error": "Descriptive error message",
+  "code": "ERROR_CODE",
+  "request_id": "uuid-for-tracking",
+  "details": { ... }
+}
+```
+
+## HTTP Status Codes
+
+| Code | Meaning | When Used |
+|------|---------|-----------|
+| `200` | OK | Successful GET, PATCH, DELETE |
+| `201` | Created | Successful POST |
+| `400` | Bad Request | Validation error, invalid input |
+| `401` | Unauthorized | Missing or invalid token |
+| `403` | Forbidden | Insufficient permissions |
+| `404` | Not Found | Resource doesn't exist |
+| `422` | Unprocessable Entity | Validation error (Pydantic) |
+| `429` | Too Many Requests | Rate limit exceeded |
+| `500` | Internal Server Error | Server error |
+
+## Pagination
+
+### Query Parameters
+
+| Parameter | Type | Default | Max | Description |
+|-----------|------|---------|-----|-------------|
+| `page` | integer | 1 | - | Page number (1-indexed) |
+| `page_size` | integer | 25 | 100 | Items per page |
+
+### Example
+
+```bash
+GET /api/v1/bras?page=2&page_size=10
+```
+
+## Filtering
+
+Most list endpoints support filtering:
+
+```bash
+# Filter BRAs by status
+GET /api/v1/bras?status=in_progress
+
+# Filter by legal entity
+GET /api/v1/bras?legal_entity_id=uuid
+
+# Multiple filters
+GET /api/v1/bras?status=approved&legal_entity_id=uuid
+```
+
+## Rate Limiting
+
+The API implements rate limiting to ensure fair usage:
+
+| Limit | Value |
+|-------|-------|
+| Requests per minute | 100 |
+| Requests per hour | 1,000 |
+
+Rate limit headers are included in responses:
+
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1705123456
+```
+
+When rate limited, you'll receive:
+
+```json
+{
+  "error": "Rate limit exceeded",
+  "code": "RATE_LIMIT_EXCEEDED",
+  "retry_after": 60
+}
+```
+
+## API Versioning
+
+The current API version is `v1`. The version is included in the URL path:
+
+```
+/api/v1/bras
+/api/v1/controls
+/api/v1/governance
+```
+
+## API Reference
+
+### Core Endpoints
+
+<CardGroup cols={2}>
+  <Card title="BRA Management" icon="file-lines" href="/api-reference/bra/list">
+    Create, manage, and approve Business Risk Assessments
+  </Card>
+  <Card title="Control Assurance" icon="shield-check" href="/api-reference/controls/list">
+    Manage controls and assess effectiveness
+  </Card>
+  <Card title="Governance" icon="landmark" href="/api-reference/governance/risk-appetite">
+    Risk appetite, audit trails, and action plans
+  </Card>
+  <Card title="Admin Operations" icon="gear" href="/api-reference/admin/enterprises">
+    Enterprise and user management
+  </Card>
+</CardGroup>
+
+### Quick Reference
+
+| Resource | Endpoints |
+|----------|-----------|
+| **BRAs** | `GET`, `POST`, `PATCH` `/api/v1/bras` |
+| **Scenarios** | `GET`, `POST` `/api/v1/bras/{id}/scenarios` |
+| **Ratings** | `GET`, `POST` `/api/v1/bras/{id}/ratings` |
+| **Controls** | `GET`, `POST`, `PATCH` `/api/v1/controls/*` |
+| **Actions** | `GET`, `POST`, `PATCH` `/api/v1/mitigation-actions` |
+| **Governance** | `GET`, `POST` `/api/v1/governance/*` |
+| **Admin** | `GET`, `POST`, `PATCH` `/api/v1/admin/*` |
+
+## Interactive Documentation
+
+When running locally, access the interactive API documentation:
+
+| Tool | URL |
+|------|-----|
+| **Swagger UI** | `http://localhost:8000/docs` |
+| **ReDoc** | `http://localhost:8000/redoc` |
+| **OpenAPI JSON** | `http://localhost:8000/openapi.json` |
+
+## SDKs and Tools
+
+### cURL
+
+```bash
+# Set token as environment variable
+export TOKEN="your-jwt-token"
+
+# Make requests
+curl -X GET "https://api.risklegion.com/api/v1/bras" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### JavaScript/TypeScript
+
+```typescript
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: 'https://api.risklegion.com/api/v1',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Add auth interceptor
+apiClient.interceptors.request.use((config) => {
+  const token = getAuthToken();
+  config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// Get BRAs
+const response = await apiClient.get('/bras');
+const bras = response.data.data;
+```
+
+### Python
+
+```python
+import httpx
+
+API_BASE = "https://api.risklegion.com/api/v1"
+TOKEN = "your-jwt-token"
+
+headers = {
+    "Authorization": f"Bearer {TOKEN}",
+    "Content-Type": "application/json"
+}
+
+async with httpx.AsyncClient() as client:
+    response = await client.get(f"{API_BASE}/bras", headers=headers)
+    bras = response.json()["data"]
+```
+
+## Error Handling Best Practices
+
+```typescript
+try {
+  const response = await apiClient.get('/bras');
+  return response.data.data;
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    const errorData = error.response?.data;
+    
+    switch (status) {
+      case 401:
+        // Token expired - refresh or redirect to login
+        await refreshToken();
+        return retry();
+      case 403:
+        // Permission denied
+        showError('You do not have permission for this action');
+        break;
+      case 404:
+        showError('Resource not found');
+        break;
+      case 429:
+        // Rate limited - wait and retry
+        const retryAfter = error.response?.headers['retry-after'];
+        await sleep(retryAfter * 1000);
+        return retry();
+      default:
+        showError(errorData?.error || 'An error occurred');
+    }
+  }
+}
+```
+
+## Need Help?
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="diagram-project" href="/architecture/overview">
+    Learn about the system architecture
+  </Card>
+  <Card title="Authentication" icon="lock" href="/api-reference/authentication">
+    Detailed authentication guide
+  </Card>
+</CardGroup>
