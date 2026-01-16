@@ -9,17 +9,6 @@ Action Plans in Risk Legion track mitigation activities for identified risks. Ac
 
 ## Action Plan Lifecycle
 
-```mermaid
-stateDiagram-v2
-    [*] --> Created: New Action
-    Created --> InProgress: Start Work
-    InProgress --> Completed: Complete
-    InProgress --> Created: Reopen
-    Created --> [*]: Archive
-    InProgress --> [*]: Archive
-    Completed --> [*]: Done
-```
-
 ### Action Statuses
 
 | Status | Description |

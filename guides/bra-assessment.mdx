@@ -20,18 +20,6 @@ A Business Risk Assessment is a structured evaluation that:
 
 ### BRA Lifecycle
 
-```mermaid
-stateDiagram-v2
-    [*] --> Draft: Create BRA
-    Draft --> InProgress: Start Assessment
-    InProgress --> UnderReview: Submit for Review
-    UnderReview --> InProgress: Request Changes
-    UnderReview --> Approved: Approve
-    InProgress --> Cancelled: Cancel
-    Approved --> [*]: Complete
-    Cancelled --> [*]: Archived
-```
-
 | Status | Description |
 |--------|-------------|
 | **Draft** | Initial creation, not yet started |
