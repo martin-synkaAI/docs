@@ -11,6 +11,20 @@ This guide provides comprehensive sample data for testing Risk Legion end-to-end
 For a complete demo scenario using Brazilian banking context, see the [DEMO_DATA_INPUT_GUIDE.md](https://github.com/risklegion/risk-legion/blob/main/DEMO_DATA_INPUT_GUIDE.md) in the repository.
 </Note>
 
+### Key Data Model Notes
+
+<AccordionGroup>
+  <Accordion title="Products no longer have Category field">
+    Products are now defined by their attributes only: customer types, geographic operations, distribution channels, and transaction types. The category field has been removed.
+  </Accordion>
+  <Accordion title="Sub-Controls: Creation vs Assessment">
+    Sub-Controls are created in **Governance** with only name and description. The ToD/ToE effectiveness ratings are assessed separately in **Control Assurance**. This separates control definition from control assessment.
+  </Accordion>
+  <Accordion title="Risk Appetite Snapshot">
+    When a BRA transitions to `in_progress`, the current risk appetite level is captured as `snapshot_appetite_level`. This ensures changes to enterprise risk appetite don't affect assessments already in progress.
+  </Accordion>
+</AccordionGroup>
+
 ## Quick Start
 
 ### 1. Create Test Users
@@ -101,48 +115,114 @@ VALUES
 
 ### Products
 
+<Note>
+Products no longer have a `category` field. Instead, they are defined by their attributes: customer types, geographic operations, distribution channels, and transaction types.
+</Note>
+
 ```sql
--- Create products
-INSERT INTO products (id, enterprise_id, name, description, category, customer_types, geographic_operations, distribution_channels, transaction_types, archived)
+-- Create products (category field removed per client feedback)
+INSERT INTO products (id, enterprise_id, name, description, customer_types, geographic_operations, distribution_channels, transaction_types, archived)
 VALUES
   (
     'prod-001', 
     '550e8400-e29b-41d4-a716-446655440001',
     'Checking Accounts (Conta Corrente)',
-    'Standard checking accounts with debit cards and online banking',
-    'Retail Banking',
-    '["Retail", "SME"]',
-    '["São Paulo", "Rio de Janeiro", "Brasília"]',
-    '["Branch", "Mobile App", "Internet Banking"]',
-    '["Deposits", "Withdrawals", "Transfers"]',
+    'Standard checking accounts with debit cards, online banking, and overdraft facilities',
+    '["Retail Customer", "Small & Medium Enterprise"]',
+    '["Americas", "Brazil"]',
+    '["In-Branch / Physical Office", "Mobile App", "Online / Web Platform"]',
+    '["Internal Transfers (A2A)", "Cash Deposits", "Cash Withdrawals", "Domestic Payments"]',
     false
   ),
   (
     'prod-002',
     '550e8400-e29b-41d4-a716-446655440001', 
-    'Personal Loans (Crédito Pessoal)',
-    'Unsecured consumer loans with fixed interest rates',
-    'Retail Banking',
-    '["Retail"]',
-    '["São Paulo", "Rio de Janeiro", "Minas Gerais"]',
-    '["Branch", "Mobile App", "Call Center"]',
-    '["Loan Origination", "Payments"]',
+    'Corporate Credit Lines',
+    'Revolving credit facilities for working capital and business expansion',
+    '["Large Corporate", "Fintech"]',
+    '["Asia–Pacific", "Americas"]',
+    '["Online / Web Platform", "Mobile App", "API / Embedded Integration"]',
+    '["Card Payments (POS)", "Card-Not-Present (E-Commerce)", "Loan Disbursements", "Loan Repayments"]',
+    false
+  ),
+  (
+    'prod-003',
+    '550e8400-e29b-41d4-a716-446655440001', 
+    'Investment Funds (Fundos de Investimento)',
+    'Mutual funds including fixed income, equities, and multi-market strategies',
+    '["Large Corporate", "High-Net-Worth Individual"]',
+    '["Americas", "Brazil"]',
+    '["In-Branch / Physical Office", "Broker / Intermediary"]',
+    '["Direct Debits / Standing Orders", "Card-Not-Present (E-Commerce)", "Investment Transactions"]',
     false
   );
 ```
+
+#### Valid Enum Values for Products
+
+| Field | Valid Values |
+|-------|--------------|
+| customer_types | Financial Institution, Fintech, High-Net-Worth Individual, Large Corporate, Merchant, Public Sector Entity, Retail Customer, Small & Medium Enterprise, Sole Proprietor |
+| geographic_operations | Americas, Asia–Pacific, Europe, Middle East & North Africa, Sub-Saharan Africa (or specific countries) |
+| distribution_channels | API / Embedded Integration, Broker / Intermediary, Call Center / Assisted, In-Branch / Physical Office, Mobile App, Online / Web Platform, Partner Platform / Marketplace, Third-Party Sales Agent |
+| transaction_types | Card Payments (POS), Card-Not-Present (E-Commerce), Cash Deposits, Cash Withdrawals, Direct Debits / Standing Orders, Domestic Payments, Internal Transfers (A2A), International / Cross-Border Payments, Investment Transactions, Loan Disbursements, Loan Repayments, Merchant Settlements, Mortgage Disbursements, Refunds / Chargebacks |
 
 ## Sample Risk Library
 
 ### Risk Scenarios
 
+<Note>
+Risk Scenarios support multiple risk groups and categories (stored as comma-separated values or arrays). Use the valid enum values below.
+</Note>
+
 ```sql
--- Create risk scenarios
+-- Create risk scenarios with proper enum values
 INSERT INTO risk_scenarios (id, enterprise_id, name, description, category, risk_group, archived)
 VALUES
-  ('rs-001', '550e8400-e29b-41d4-a716-446655440001', 'Consumer Loan Default Risk', 'Risk of consumer loan defaults due to economic downturn or over-indebtedness', 'Credit Risk', 'Financial', false),
-  ('rs-002', '550e8400-e29b-41d4-a716-446655440001', 'Cyberattack on Digital Banking Platform', 'Risk of data breach or system downtime due to cyber attacks', 'Operational Risk', 'Technology', false),
-  ('rs-003', '550e8400-e29b-41d4-a716-446655440001', 'Anti-Money Laundering (AML) Control Failure', 'Risk of failing to detect suspicious transactions', 'Compliance Risk', 'Regulatory', false);
+  (
+    'rs-001', 
+    '550e8400-e29b-41d4-a716-446655440001', 
+    'Consumer Loan Default Risk', 
+    'Risk of consumer loan defaults due to economic downturn or over-indebtedness', 
+    'Fraud', 
+    'Customer Risk', 
+    false
+  ),
+  (
+    'rs-002', 
+    '550e8400-e29b-41d4-a716-446655440001', 
+    'Cyberattack on Digital Banking Platform', 
+    'Risk of data breach or system downtime due to sophisticated cyber attacks targeting financial infrastructure', 
+    'Cybercrime', 
+    'Technology & Cyber Risk', 
+    false
+  ),
+  (
+    'rs-003', 
+    '550e8400-e29b-41d4-a716-446655440001', 
+    'Anti-Money Laundering (AML) Control Failure', 
+    'Risk of failing to detect and report suspicious transactions in compliance with regulatory requirements', 
+    'Money Laundering', 
+    'Operational Risk', 
+    false
+  ),
+  (
+    'rs-004', 
+    '550e8400-e29b-41d4-a716-446655440001', 
+    'Interest Rate Risk in Banking Book', 
+    'Risk of losses due to adverse movements in interest rates affecting the banking book', 
+    'Proliferation Financing', 
+    'Operational Risk', 
+    false
+  );
 ```
+
+#### Valid Enum Values for Risk Scenarios
+
+| Field | Valid Values |
+|-------|--------------|
+| risk_group | Customer Risk, Delivery Channel Risk, Employee Risk, Geographic Risk, Governance & Control Risk, Operational Risk, Product & Service Risk, Technology & Cyber Risk, Third-Party / Outsourcing Risk, Transactional Risk |
+| category | Bribery & Corruption, Cybercrime, Fraud, Misconduct / Insider Risk, Money Laundering, Proliferation Financing, Sanctions Risk, Tax Crime / Tax Evasion, Terrorist Financing |
 
 ### Key Controls
 
@@ -155,20 +235,54 @@ VALUES
   ('kc-003', '550e8400-e29b-41d4-a716-446655440001', 'Real-Time AML Transaction Monitoring', 'Automated system monitoring all transactions for suspicious patterns', false);
 ```
 
-### Sub-Controls with ToD/ToE
+### Sub-Controls
+
+<Note>
+Sub-Controls are created in **Governance** with only name and description. The ToD/ToE ratings are assessed separately in **Control Assurance** after the sub-control is created. This separates the control definition from the control assessment workflow.
+</Note>
+
+#### Step 1: Create Sub-Controls (Governance)
 
 ```sql
--- Create sub-controls with effectiveness ratings
+-- Create sub-controls with name and description only
+-- ToD/ToE ratings are assessed separately in Control Assurance
+INSERT INTO sub_controls (id, key_control_id, name, description, archived)
+VALUES
+  ('sc-001', 'kc-001', 'Bureau Data Verification', 'Automated verification of credit bureau data against major bureaus', false),
+  ('sc-002', 'kc-001', 'Income and Employment Verification', 'Cross-checking of stated income against employer databases and tax records', false),
+  ('sc-003', 'kc-002', 'Biometric Authentication Enrollment', 'Facial recognition or fingerprint enrollment for mobile app access', false),
+  ('sc-004', 'kc-002', 'Failed Authentication Lockout', 'Automatic account lockout after 3 consecutive failed login attempts', false),
+  ('sc-005', 'kc-003', 'High-Value Transaction Alerts', 'Real-time alerts for transactions exceeding R$ 50,000', false),
+  ('sc-006', 'kc-003', 'PEP Screening', 'Automated screening against Politically Exposed Person databases', false);
+```
+
+#### Step 2: Assess Sub-Controls (Control Assurance)
+
+```sql
+-- Update sub-controls with ToD/ToE ratings during Control Assurance
 -- ToD: A (Excellent) to E (Inadequate)
 -- ToE: 1 (Highly Effective) to 5 (Ineffective)
-INSERT INTO sub_controls (id, key_control_id, name, description, tod, toe, total_effectiveness, testing_date, tested_by, archived)
-VALUES
-  ('sc-001', 'kc-001', 'Bureau Data Verification', 'Automated verification of credit bureau data', 'A', '1', 'Highly Effective', '2026-01-10', 'John Smith', false),
-  ('sc-002', 'kc-001', 'Income and Employment Verification', 'Cross-checking of stated income against databases', 'B', '2', 'Effective', '2026-01-10', 'John Smith', false),
-  ('sc-003', 'kc-002', 'Biometric Authentication Enrollment', 'Facial recognition or fingerprint for mobile access', 'A', '2', 'Highly Effective', '2026-01-12', 'Jane Doe', false),
-  ('sc-004', 'kc-002', 'Failed Authentication Lockout', 'Account lockout after 3 failed attempts', 'B', '1', 'Highly Effective', '2026-01-12', 'Jane Doe', false),
-  ('sc-005', 'kc-003', 'High-Value Transaction Alerts', 'Alerts for transactions exceeding R$ 50,000', 'A', '2', 'Highly Effective', '2026-01-15', 'Maria Garcia', false),
-  ('sc-006', 'kc-003', 'PEP Screening', 'Screening against Politically Exposed Person databases', 'B', '2', 'Effective', '2026-01-15', 'Maria Garcia', false);
+UPDATE sub_controls SET 
+  tod = 'A', 
+  toe = '1', 
+  total_effectiveness = 'Highly Effective',
+  tod_justification = 'Comprehensive design with documented procedures and automated checks',
+  toe_justification = 'Sample testing showed 98% effectiveness rate across all tested transactions',
+  testing_date = '2026-01-10', 
+  tested_by = 'John Smith'
+WHERE id = 'sc-001';
+
+UPDATE sub_controls SET 
+  tod = 'B', 
+  toe = '2', 
+  total_effectiveness = 'Effective',
+  tod_justification = 'Well-structured verification process with minor documentation gaps',
+  toe_justification = 'Sample testing showed 92% effectiveness rate',
+  testing_date = '2026-01-10', 
+  tested_by = 'John Smith'
+WHERE id = 'sc-002';
+
+-- Continue for other sub-controls...
 ```
 
 ### Risk Triggers
@@ -186,11 +300,17 @@ VALUES
 
 ### Create BRA
 
+<Note>
+When a BRA transitions from `draft` to `in_progress`, the system captures the current risk appetite level as `snapshot_appetite_level`. This ensures that changes to the enterprise's risk appetite don't affect assessments already in progress.
+</Note>
+
 ```sql
 -- Create a BRA (requires legal_entity_id)
+-- snapshot_appetite_level is captured automatically when status changes to in_progress
 INSERT INTO business_risk_assessments (
   id, enterprise_id, legal_entity_id, business_unit_id, 
-  name, description, status, period, assessor, start_date
+  name, description, status, period, assessor, start_date,
+  snapshot_appetite_level
 )
 VALUES (
   'bra-001',
@@ -202,9 +322,20 @@ VALUES (
   'in_progress',
   'Q1 2026',
   'assessor@acme.com',
-  '2026-01-01'
+  '2026-01-01',
+  'Medium'  -- Captured from enterprise risk appetite at time of BRA creation
 );
 ```
+
+#### BRA Status Workflow
+
+| Status | Description | Risk Appetite |
+|--------|-------------|---------------|
+| `draft` | Initial creation, not started | Uses current enterprise appetite |
+| `in_progress` | Assessment underway | Uses `snapshot_appetite_level` (frozen) |
+| `pending_review` | Submitted for review | Uses `snapshot_appetite_level` |
+| `approved` | Reviewed and approved | Uses `snapshot_appetite_level` |
+| `rejected` | Returned for revisions | Uses `snapshot_appetite_level` |
 
 ### Add Risk Scenarios to BRA
 
@@ -239,18 +370,31 @@ VALUES
 
 ## Sample Risk Appetite
 
+<Note>
+Risk Appetite is configured at the enterprise level. When a BRA is created and transitions to `in_progress`, the current appetite level is captured as `snapshot_appetite_level` on the BRA. This ensures that subsequent changes to the enterprise's risk appetite don't affect assessments already in progress.
+</Note>
+
 ```sql
--- Configure risk appetite
--- Enterprise default (no entity specified)
+-- Configure enterprise risk appetite
+-- This sets the maximum acceptable risk level for new assessments
 INSERT INTO risk_appetite (id, enterprise_id, risk_level, threshold_value, description, legal_entity_id)
 VALUES
   ('ra-001', '550e8400-e29b-41d4-a716-446655440001', 'Medium', 9, 'Enterprise accepts Medium risk (score ≤9) as maximum tolerance', NULL);
 
--- Entity-specific override
+-- Optional: Entity-specific override for stricter requirements
 INSERT INTO risk_appetite (id, enterprise_id, risk_level, threshold_value, description, legal_entity_id)
 VALUES
   ('ra-002', '550e8400-e29b-41d4-a716-446655440001', 'Low', 4, 'Lower appetite for insurance subsidiary per regulatory requirement', 'le-002');
 ```
+
+#### Risk Appetite Snapshot Behavior
+
+| Scenario | Behavior |
+|----------|----------|
+| Enterprise changes appetite from Medium → High | Existing `in_progress` BRAs keep their `snapshot_appetite_level` (Medium) |
+| New BRA created | Captures current enterprise appetite as `snapshot_appetite_level` |
+| BRA in `draft` status | Uses current enterprise appetite (not yet snapshotted) |
+| BRA transitions to `in_progress` | `snapshot_appetite_level` is captured and frozen |
 
 ## Sample Mitigation Actions
 
@@ -347,9 +491,27 @@ curl -X POST http://localhost:8000/api/v1/bras/$BRA_ID/ratings \
   }'
 ```
 
-### Update Control Effectiveness via API
+### Create Product via API
 
 ```bash
+# Note: Products no longer have a category field
+curl -X POST http://localhost:8000/api/v1/products \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Mobile Banking App",
+    "description": "Full-featured mobile banking application for retail customers",
+    "customer_types": ["Retail Customer", "Small & Medium Enterprise"],
+    "geographic_operations": ["Americas", "Brazil"],
+    "distribution_channels": ["Mobile App"],
+    "transaction_types": ["Internal Transfers (A2A)", "Domestic Payments", "Card Payments (POS)"]
+  }'
+```
+
+### Update Control Effectiveness via API (Control Assurance)
+
+```bash
+# ToD/ToE ratings are assessed in Control Assurance, not during sub-control creation
 curl -X PATCH http://localhost:8000/api/v1/controls/sub-controls/sc-001 \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
@@ -358,8 +520,22 @@ curl -X PATCH http://localhost:8000/api/v1/controls/sub-controls/sc-001 \
     "toe": "2",
     "testing_date": "2026-01-15",
     "tested_by": "John Smith",
-    "tod_justification": "Control design is comprehensive with documented procedures",
-    "toe_justification": "Sample testing showed 95% effectiveness rate"
+    "tod_justification": "Control design is comprehensive with documented procedures and automated checks",
+    "toe_justification": "Sample testing showed 95% effectiveness rate across 150 transactions"
+  }'
+```
+
+### Create Sub-Control via API (Governance)
+
+```bash
+# Sub-controls are created with name and description only
+# ToD/ToE ratings are assessed separately in Control Assurance
+curl -X POST http://localhost:8000/api/v1/controls/kc-001/sub-controls \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Debt-to-Income Ratio Check",
+    "description": "Automated check ensuring borrower debt-to-income ratio is within acceptable limits"
   }'
 ```
 
