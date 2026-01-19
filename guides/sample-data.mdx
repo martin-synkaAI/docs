@@ -353,14 +353,18 @@ VALUES
 ```sql
 -- Create inherent and residual risk ratings
 -- Risk Score = Impact × Likelihood (1-25)
--- Risk Levels: Low (1-4), Medium (5-9), High (10-15), Very High (16-25)
+-- Risk Level is determined by the 5×5 risk matrix (not by score thresholds)
+-- See "Risk Matrix" section below for the complete mapping
 
 INSERT INTO bra_risk_ratings (id, bra_id, bra_risk_scenario_id, rating_type, impact_score, likelihood_score, risk_score, risk_level, justification)
 VALUES
-  -- Inherent ratings
+  -- Inherent ratings (risk_level based on matrix lookup, not score)
+  -- Impact 4 (High) × Likelihood 4 (Likely) = Very High
   ('brr-001', 'bra-001', 'brs-001', 'inherent', 4, 4, 16, 'Very High', 'High economic uncertainty and rising consumer debt levels'),
+  -- Impact 5 (Severe) × Likelihood 4 (Likely) = Very High
   ('brr-002', 'bra-001', 'brs-002', 'inherent', 5, 4, 20, 'Very High', 'Sophisticated threat landscape targeting financial institutions'),
-  ('brr-003', 'bra-001', 'brs-003', 'inherent', 5, 3, 15, 'High', 'Complex transaction patterns and evolving regulatory requirements'),
+  -- Impact 5 (Severe) × Likelihood 3 (Possible) = Very High
+  ('brr-003', 'bra-001', 'brs-003', 'inherent', 5, 3, 15, 'Very High', 'Complex transaction patterns and evolving regulatory requirements'),
   
   -- Residual ratings (after controls)
   ('brr-004', 'bra-001', 'brs-001', 'residual', 3, 2, 6, 'Medium', 'Credit scoring and collection processes reduce risk'),
@@ -621,14 +625,26 @@ ORDER BY kc.name, sc.name;
 | 4 | Less Effective (50-70%) |
 | 5 | Ineffective (&lt;50%) |
 
-### Risk Levels
+### Risk Matrix
 
-| Score Range | Level |
-|-------------|-------|
-| 1-4 | Low |
-| 5-9 | Medium |
-| 10-15 | High |
-| 16-25 | Very High |
+Risk level is determined by the combination of Impact and Likelihood using the following 5×5 matrix:
+
+| Impact ↓ / Likelihood → | A (Rare) | B (Unlikely) | C (Possible) | D (Likely) | E (Frequent) |
+|-------------------------|----------|--------------|--------------|------------|--------------|
+| **5 - Severe**          | Medium   | High         | Very High    | Very High  | Very High    |
+| **4 - High**            | Medium   | High         | High         | Very High  | Very High    |
+| **3 - Moderate**        | Low      | Medium       | High         | High       | Very High    |
+| **2 - Minor**           | Low      | Low          | Medium       | High       | High         |
+| **1 - Negligible**      | Low      | Low          | Low          | Medium     | Medium       |
+
+#### Risk Level Colors
+
+| Level | Color | Meaning |
+|-------|-------|---------|
+| Low | Green | Acceptable risk, monitor only |
+| Medium | Yellow | Requires attention, consider mitigation |
+| High | Orange | Significant risk, mitigation required |
+| Very High | Red | Critical risk, immediate action required |
 
 ## Next Steps
 
